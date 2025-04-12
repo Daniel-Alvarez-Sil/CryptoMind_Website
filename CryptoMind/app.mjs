@@ -9,10 +9,20 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
 import fetch from 'node-fetch'; 
+import session from 'express-session';
+import bcrypt from 'bcrypt';
+
 
 const app = express();
 const port = process.env.PORT ?? 8080;
 const ipAddress = process.env.C9_HOSTNAME ?? 'localhost';
+
+app.use(session({
+  secret: 'PL4T4N1T0__p@7041',
+  resave: false,
+  saveUninitialized: true,
+}));
+
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -254,20 +264,91 @@ app.post('/sesion/end', async (req, res) => {
 //   }
 // });
 
+// Servicio de login para página web
+app.post('/login', async (req, res) => {
+  const { correo, contrasena } = req.body;
+
+  try {
+    const connection = await dbConnect();
+    const [rows] = await connection.execute(
+      'SELECT * FROM usuario WHERE correo = ?',
+      [correo]
+    );
+
+    const user = rows[0];
+    if (!user) {
+      console.log("No hay usuarios. "); 
+      return res.status(401).send('Invalid credentials');
+    }
+    
+    
+    bcrypt.hash(user.contrasena, 10, function(err, hash) {
+      if (err) throw err;
+      user.contrasena = hash;
+    });
+        
+    // const passwordMatch = await bcrypt.compare(contrasena, user.contrasena);
+    // if (!passwordMatch) {
+    if (contrasena.trim() != user.contrasena.trim()) {
+      console.log(contrasena, user.contrasena); 
+      return res.status(401).send('Invalid credentials');
+    }
+
+    req.session.user = {
+      id: user.id_usuario,
+      correo: user.correo,
+      is_Admin: user.es_admin === 1,
+    };
+
+    res.redirect('/dashboard'); // or wherever your homepage is
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Servicio de logout para página web
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/login');
+  });
+});
+
+// Funciones para validar credenciales en páginas que lo requieran
+function ensureAuthenticated(req, res, next) {
+  if (req.session.user) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
+function ensureAdmin(req, res, next) {
+  if (req.session.user?.is_Admin) {
+    return next();
+  }
+  res.redirect('/login');
+  // res.status(403).send('Access denied');
+}
+
+// Página de login
+app.get('/login', (req, res) => {
+  res.render('login'); 
+}); 
+
 // Página de inicio
-app.get('/', (req, res) => {
+app.get('/', ensureAdmin, (req, res) => {
   res.render('home', { showNavbar: true });
 });
 
 // Página de usuarios
-app.get('/users', async (req, res) => {
+app.get('/users', ensureAdmin, async (req, res) => {
   const connection = await dbConnect();
   const [rows] = await connection.execute('SELECT * FROM usuario');
   res.render('users', { showNavbar: true , usuarios: rows});
 });
 
 // Página de cursos
-app.get('/education', async (req, res) => {
+app.get('/education', ensureAdmin, async (req, res) => {
   const connection = await dbConnect();
 
   try {
@@ -348,7 +429,7 @@ app.get('/education', async (req, res) => {
 });
 
 // Página de dashboard
-app.get('/dashboard', async (req, res) => {
+app.get('/dashboard', ensureAdmin, async (req, res) => {
   const connection = await dbConnect();
   try {
     const [rows] = await connection.execute(`
