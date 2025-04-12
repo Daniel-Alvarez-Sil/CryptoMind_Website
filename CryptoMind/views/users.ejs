@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Usuarios</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap">
+  <link rel="stylesheet" href="/css/users.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<% if (showNavbar) { %>
+      <%- include ('./components/navbar.ejs') %>
+<% } %>
+
+<body class="w3-display-container w3-light-grey">
+  
+   <div class=" w3-margin-bottom big-margin w3-margin-right w3-margin-left">
+      <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+        <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Activos</h2>
+
+        
+        <div class="table-container w3-responsive">
+          <table class="w3-table-all w3-hoverable">
+            <thead>
+              <tr class="w3-light-blue">
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Nombre</th>
+                <th>Nacimiento</th>
+                <th>País</th>
+                <th>Género</th>
+                <th>Tokens</th>
+                <th>Puntaje</th>
+                <th>Vidas</th>
+                <th>Creado en</th>
+                <th>Última conexión</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% usuarios.forEach(usuario => { %>
+                <tr>
+                  <td><%= usuario.id_usuario %></td>
+                  <td><%= usuario.username %></td>
+                  <td><%= usuario.correo %></td>
+                  <td><%= usuario.nombre %></td>
+                  <td><%= usuario.nacimiento ? new Date(usuario.nacimiento).toISOString().split('T')[0] : 'N/A' %></td>
+                  <td><%= usuario.pais %></td>
+                  <td><%= usuario.genero || 'N/A' %></td>
+                  <td><%= usuario.tokens %></td>
+                  <td><%= usuario.puntaje %></td>
+                  <td><%= usuario.vidas %></td>
+                  <td><%= usuario.creado_en ? new Date(usuario.creado_en).toISOString().split('T')[0] : 'N/A' %></td>
+                  <td><%= usuario.ultima_conexion ? new Date(usuario.ultima_conexion).toISOString().split('T')[0] : 'Nunca' %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div> 
+      </div> 
+    </div> 
+
+  <div class="w3-row-padding w3-center">
+
+    <div class="w3-half w3-margin-bottom">
+        <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+          <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Activos</h2>
+          <canvas id="countryChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="w3-half w3-margin-bottom">
+        <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+          <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Activos</h2>
+          <canvas id="genderChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="w3-half w3-margin-bottom">
+        <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+          <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Activos</h2>
+          <canvas id="createdChart"></canvas>
+        </div>
+    </div>
+    
+    
+  </div>
+
+<script>
+  const usuarios = <%- JSON.stringify(usuarios) %>;
+
+  const countryCounts = {};
+  const genderCounts = {};
+  const createdDateCounts = {};
+
+  usuarios.forEach(user => {
+    const country = user.pais || 'Desconocido';
+    const gender = user.genero || 'No especificado';
+    const createdDate = new Date(user.creado_en).toISOString().split('T')[0];
+
+    countryCounts[country] = (countryCounts[country] || 0) + 1;
+    genderCounts[gender] = (genderCounts[gender] || 0) + 1;
+    createdDateCounts[createdDate] = (createdDateCounts[createdDate] || 0) + 1;
+  });
+
+  const sortedCreatedDates = Object.keys(createdDateCounts).sort();
+  const sortedCreatedCounts = sortedCreatedDates.map(date => createdDateCounts[date]);
+
+  new Chart(document.getElementById('countryChart'), {
+    type: 'pie',
+    data: {
+      labels: Object.keys(countryCounts),
+      datasets: [{
+        label: 'Usuarios por país',
+        data: Object.values(countryCounts),
+        backgroundColor: ['#2196f3', '#4caf50', '#ff9800', '#e91e63', '#9c27b0', '#00bcd4']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: 'Usuarios por país',
+          padding: { top: 10, bottom: 0 },
+          font: {
+            size: 16
+          }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('genderChart'), {
+    type: 'pie',
+    data: {
+      labels: Object.keys(genderCounts),
+      datasets: [{
+        label: 'Usuarios por género',
+        data: Object.values(genderCounts),
+        backgroundColor: ['#f44336', '#3f51b5', '#ffeb3b', '#9e9e9e']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: 'Usuarios por género',
+          padding: { top: 10, bottom: 0 },
+          font: {
+            size: 16
+          }
+        }
+      }
+    }
+  });
+
+  const ctx = document.getElementById('createdChart').getContext('2d');
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, 'rgba(76, 175, 80, 0.4)');
+  gradient.addColorStop(1, 'rgba(76, 175, 80, 0)');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: sortedCreatedDates,
+      datasets: [{
+        label: 'Usuarios creados por fecha',
+        data: sortedCreatedCounts,
+        borderColor: '#388e3c',
+        backgroundColor: gradient,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: 'Usuarios creados a lo largo del tiempo',
+          padding: { top: 10, bottom: 10 },
+          font: {
+            size: 18
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        },
+        legend: {
+          display: false
+        }
+      },
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Fecha',
+            font: {
+              size: 14
+            }
+          },
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Usuarios creados',
+            font: {
+              size: 14
+            }
+          },
+          beginAtZero: true,
+          ticks: {
+            precision: 0
+          }
+        }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

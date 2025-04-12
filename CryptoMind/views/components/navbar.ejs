@@ -1,0 +1,29 @@
+<!-- Top menu bar -->
+<div class="w3-top">
+  <div class="w3-bar w3-black w3-large w3-padding w3-card">
+    <a href="javascript:void(0);" class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right" onclick="toggleMenu()" title="Toggle Navigation Menu">
+      ☰
+    </a>
+    <a href="/dashboard" class="w3-bar-item w3-button w3-hover-teal">Dashboard</a>
+    <a href="/users" class="w3-bar-item w3-button w3-hide-small w3-hover-teal">Usuarios</a>
+    <a href="/education" class="w3-bar-item w3-button w3-hide-small w3-hover-teal">Educación</a>
+    <a href="/logout" class="w3-bar-item w3-button w3-right w3-hover-red">Salir</a>
+  </div>
+
+  <!-- Collapsible menu for small screens -->
+  <div id="navMenu" class="w3-bar-block w3-black w3-hide w3-hide-large w3-hide-medium">
+    <a href="/metrics" class="w3-bar-item w3-button w3-hover-teal">Metrics</a>
+    <a href="/settings" class="w3-bar-item w3-button w3-hover-teal">Settings</a>
+  </div>
+</div>
+
+<script>
+  function toggleMenu() {
+    const x = document.getElementById("navMenu");
+    if (x.className.indexOf("w3-show") === -1) {
+      x.className += " w3-show";
+    } else {
+      x.className = x.className.replace(" w3-show", "");
+    }
+  }
+</script>

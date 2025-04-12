@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> The CryptoMind Database </title>
+    </head>
+    <body>
+        <h1> The CryptoMind Database </h1>
+        <ul>
+            <% for (const row of rows) { %>
+                <li>
+                    <%= row.username %>, 
+                    <%= row.correo %>,
+                    <%= row.password %>
+                </li>
+            <% } %>
+        </ul>
+    </body>
+</html>

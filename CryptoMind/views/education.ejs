@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cursos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap">
+  <link rel="stylesheet" href="/css/education.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+
+ <% if (showNavbar) { %>
+      <%- include ('./components/navbar.ejs') %>
+    <% } %>
+
+<body class="w3-display-container w3-light-grey">
+
+  <div class="w3-container big-margin">
+
+    <% cursos.forEach(curso => { %>
+      <div class="w3-card-4 w3-white w3-margin-bottom">
+  <!-- Clickable header -->
+  <header class="w3-container w3-blue w3-hover-opacity" style="cursor: pointer;" onclick="toggleCurso('<%= curso.id_curso %>')">
+    <h2>
+      <%= curso.nombre %>
+      <i class="fa fa-chevron-down w3-right"></i>
+    </h2>
+  </header>
+
+  <!-- Collapsible content -->
+  <div id="curso-<%= curso.id_curso %>" class="w3-container w3-hide w3-padding">
+    <!-- Chart -->
+    <div class="w3-center w3-padding-16">
+      <h5 class="w3-large">Participación en este curso</h5>
+      <div style="width: 240px; height: 240px; margin: auto;">
+        <canvas id="chart-<%= curso.id_curso %>"></canvas>
+      </div>
+    </div>
+
+    <p><strong>Descripción:</strong> <%= curso.descripcion %></p>
+    <p><strong>Dificultad:</strong> <%= curso.dificultad %> / 10</p>
+    <p><strong>Estado:</strong> <%= curso.estado %></p>
+    <p>
+      <strong>Categorías:</strong>
+      <% curso.categorias.forEach(cat => { %>
+        <span class="w3-tag w3-round w3-teal categoria-tag"><%= cat %></span>
+      <% }) %>
+    </p>
+
+    <% curso.niveles.forEach(nivel => { %>
+      <div class="w3-panel w3-border-left w3-border-blue nivel-panel">
+        <h4><%= nivel.titulo %> (Dificultad: <%= nivel.dificultad %>, Orden: <%= nivel.orden %>)</h4>
+        <p><%= nivel.descripcion %></p>
+        <p><strong>Jugadores:</strong> <%= nivel.jugadoresNivel %></p>
+
+        <% nivel.preguntas.forEach(pregunta => { %>
+          <div class="w3-panel w3-pale-yellow w3-border w3-round-large">
+            <p><strong>Pregunta:</strong> <%= pregunta.texto_pregunta %> (Dificultad: <%= pregunta.dificultad %>)</p>
+            <ul class="w3-ul">
+              <% pregunta.opciones.forEach(opcion => { %>
+                <li class="<%= opcion.es_correcta ? 'w3-green' : 'w3-light-grey' %>">
+                  <%= opcion.texto_opcion %>
+                  <% if (opcion.es_correcta) { %>
+                    <span class="w3-tag w3-small w3-blue w3-round">Correcta</span>
+                  <% } %>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% }) %>
+      </div>
+    <% }) %>
+  </div>
+</div>
+    <% }) %>
+
+  </div>
+  <script>
+  <% cursos.forEach(curso => { 
+       const notEnrolled = usuariosTotales - curso.usuariosInscritos;
+  %>
+    const ctx<%= curso.id_curso %> = document.getElementById('chart-<%= curso.id_curso %>').getContext('2d');
+    new Chart(ctx<%= curso.id_curso %>, {
+      type: 'pie',
+      data: {
+        labels: ['Inscritos', 'No inscritos'],
+        datasets: [{
+          label: 'Usuarios en curso <%= curso.nombre %>',
+          data: [<%= curso.usuariosInscritos %>, <%= notEnrolled %>],
+          backgroundColor: [
+            'rgba(0, 128, 255, 0.7)',
+            'rgba(200, 200, 200, 0.7)'
+          ],
+          borderColor: [
+            'rgba(0, 128, 255, 1)',
+            'rgba(180, 180, 180, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+          },
+          title: {
+            display: false
+          }
+        }
+      }
+    });
+  <% }) %>
+</script>
+<script>
+  function toggleCurso(id) {
+    const content = document.getElementById('curso-' + id);
+    if (content.classList.contains('w3-hide')) {
+      content.classList.remove('w3-hide');
+    } else {
+      content.classList.add('w3-hide');
+    }
+  }
+</script>
+
+</body>
+</html>
