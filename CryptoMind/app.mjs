@@ -347,6 +347,104 @@ app.get('/users', ensureAdmin, async (req, res) => {
   res.render('users', { showNavbar: true , usuarios: rows});
 });
 
+// Página de usuarios individuales
+app.get('/users/:id', async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const connection = await dbConnect();
+    
+    // Información de usuario
+    const [rows] = await connection.execute(
+      'SELECT * FROM usuario WHERE id_usuario = ?',
+      [userId]
+    );
+    
+    if (rows.length === 0) {
+      return res.status(404).send('User not found');
+    }
+
+    const user = rows[0];
+    
+    // Información de sesiones
+    const [sessionRows] = await connection.execute(
+      `SELECT inicio_en, termino_en FROM sesion WHERE id_usuario = ? AND termino_en IS NOT NULL`,
+      [userId]
+    );
+    
+    const sessionData = sessionRows.map(row => {
+      const start = new Date(row.inicio_en);
+      const end = new Date(row.termino_en);
+      const durationMinutes = (end - start) / 60000; // milliseconds to minutes
+    
+      return {
+        x: start,
+        y: 1, // static y
+        duration: durationMinutes
+      };
+    });
+    
+    // Información de cursos
+    const [courseRows] = await connection.execute(
+      `SELECT c.id_curso, c.nombre, c.descripcion, c.estado, c.dificultad, uc.fecha_inscripcion
+       FROM curso c
+       JOIN usuario_curso uc ON c.id_curso = uc.id_curso
+       WHERE uc.id_usuario = ?`,
+      [userId]
+    );
+    
+    // Información de niveles
+    const [levelData] = await connection.execute(
+      `SELECT 
+         c.id_curso,
+         n.id_nivel,
+         n.titulo,
+         un.fecha_inicio,
+         un.fecha_fin,
+         un.avance,
+         SUM(CASE WHEN up.es_correcta = 1 THEN 1 ELSE 0 END) AS correctas,
+         SUM(CASE WHEN up.es_correcta = 0 THEN 1 ELSE 0 END) AS incorrectas
+       FROM usuario_nivel un
+       JOIN nivel n ON n.id_nivel = un.id_nivel
+       JOIN curso c ON c.id_curso = n.id_curso
+       LEFT JOIN pregunta p ON p.id_nivel = n.id_nivel
+       LEFT JOIN usuario_pregunta up ON up.id_pregunta = p.id_pregunta AND up.id_usuario = un.id_usuario
+       WHERE un.id_usuario = ?
+       GROUP BY n.id_nivel`,
+      [userId]
+    );
+    
+    // Información de preguntas
+    const [questionRows] = await connection.execute(
+      `SELECT 
+         n.id_nivel,
+         p.id_pregunta,
+         p.texto_pregunta,
+         up.es_correcta
+       FROM usuario_nivel un
+       JOIN nivel n ON n.id_nivel = un.id_nivel
+       JOIN pregunta p ON p.id_nivel = n.id_nivel
+       LEFT JOIN usuario_pregunta up 
+         ON up.id_pregunta = p.id_pregunta AND up.id_usuario = un.id_usuario
+       WHERE un.id_usuario = ?`,
+      [userId]
+    );
+    
+    // Organize per level
+    const questionsByLevel = {};
+    questionRows.forEach(q => {
+      if (!questionsByLevel[q.id_nivel]) questionsByLevel[q.id_nivel] = [];
+      questionsByLevel[q.id_nivel].push(q);
+    });
+        
+    res.render('user', { showNavbar:true, user, sessionData, courses: courseRows, levelsByCourse: levelData, questionsByLevel });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal server error');
+  }
+});
+
+
 // Página de cursos
 app.get('/education', ensureAdmin, async (req, res) => {
   const connection = await dbConnect();

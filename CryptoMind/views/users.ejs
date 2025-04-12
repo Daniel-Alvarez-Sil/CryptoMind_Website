@@ -19,7 +19,7 @@
   
    <div class=" w3-margin-bottom big-margin w3-margin-right w3-margin-left">
       <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
-        <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Activos</h2>
+        <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Registrados</h2>
 
         
         <div class="table-container w3-responsive">
@@ -42,7 +42,7 @@
             </thead>
             <tbody>
               <% usuarios.forEach(usuario => { %>
-                <tr>
+                <tr class="clickable-row" data-id="<%= usuario.id_usuario %>">
                   <td><%= usuario.id_usuario %></td>
                   <td><%= usuario.username %></td>
                   <td><%= usuario.correo %></td>
@@ -63,31 +63,41 @@
       </div> 
     </div> 
 
-  <div class="w3-row-padding w3-center">
+  <!-- Dentro del body, reemplaza tu sección de gráficas por: -->
+<div class="w3-row-padding w3-margin-top">
 
-    <div class="w3-half w3-margin-bottom">
-        <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
-          <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Activos</h2>
-          <canvas id="countryChart"></canvas>
-        </div>
+  <div class="w3-col s12 m6 l3 w3-margin-bottom">
+    <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+      <h3 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Demográfica de Países</h3>
+      <canvas id="countryChart"></canvas>
     </div>
-    
-    <div class="w3-half w3-margin-bottom">
-        <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
-          <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Activos</h2>
-          <canvas id="genderChart"></canvas>
-        </div>
-    </div>
-    
-    <div class="w3-half w3-margin-bottom">
-        <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
-          <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Activos</h2>
-          <canvas id="createdChart"></canvas>
-        </div>
-    </div>
-    
-    
   </div>
+
+  <div class="w3-col s12 m6 l3 w3-margin-bottom">
+    <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+      <h3 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Demográfica de Géneros</h3>
+      <canvas id="genderChart"></canvas>
+    </div>
+  </div>
+
+  <div class="w3-col s12 l6 w3-margin-bottom">
+    <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+      <h3 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Timeline de Registro</h3>
+      <canvas id="createdChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+  document.querySelectorAll('.clickable-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const userId = row.getAttribute('data-id');
+      window.location.href = `/users/${userId}`;
+    });
+  });
+</script>
 
 <script>
   const usuarios = <%- JSON.stringify(usuarios) %>;
@@ -235,6 +245,7 @@
     }
   });
 </script>
+
 
 </body>
 </html>

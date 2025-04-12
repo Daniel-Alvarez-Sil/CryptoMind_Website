@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Métricas de Usuario</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+</head>
+
+<% if (showNavbar) { %>
+  <%- include ('./components/navbar.ejs') %>
+<% } %>
+
+<body class="w3-light-grey">
+  <div class="w3-content w3-margin-top w3-padding">
+
+    <!-- Card: General Info -->
+    <div class="w3-card-4 w3-white w3-round-large w3-padding-24 w3-margin-bottom">
+      <h2 class="w3-center">Información General</h2>
+      <p><strong>ID:</strong> <%= user.id_usuario %></p>
+      <p><strong>Nombre:</strong> <%= user.nombre %></p>
+      <p><strong>Email:</strong> <%= user.correo %></p>
+      <p><strong>Puntaje:</strong> <%= user.puntaje %></p>
+      <p><strong>Tokens:</strong> <%= user.tokens %></p>
+    </div>
+
+    <!-- Card: Scatter Chart -->
+    <div class="w3-card-4 w3-white w3-round-large w3-padding-24">
+      <h2 class="w3-center">Sesiones del Usuario</h2>
+      <canvas id="sessionScatterChart"></canvas>
+    </div>
+
+  </div>
+  <!-- Courses Section -->
+   <div class="w3-card-4 w3-white w3-round-large w3-padding-24 w3-margin-top">
+  <h2 class="w3-center">Cursos Inscritos</h2>
+
+  <% if (courses.length === 0) { %>
+    <p class="w3-center w3-text-grey">El usuario no está inscrito en ningún curso.</p>
+  <% } else { %>
+    <% courses.forEach((curso, cIndex) => { %>
+      <div class="w3-margin-top">
+        <button onclick="toggleCourse(<%= cIndex %>)"
+                class="w3-button w3-block w3-left-align w3-light-grey w3-round-large">
+          <strong><%= curso.nombre %></strong>
+          <span class="w3-right">&#9660;</span>
+        </button>
+
+        <div id="course-<%= cIndex %>" class="w3-container w3-hide w3-padding w3-pale-blue w3-round-large">
+
+          <p><strong>Descripción:</strong> <%= curso.descripcion || 'Sin descripción' %></p>
+          <p><strong>Estado:</strong> <%= curso.estado %></p>
+          <p><strong>Dificultad:</strong> <%= curso.dificultad %>/10</p>
+          <p><strong>Inscrito desde:</strong> <%= new Date(curso.inscrito_en).toLocaleDateString() %></p>
+
+          <% const niveles = levelsByCourse.filter(l => l.id_curso === curso.id_curso); %>
+          <% if (niveles.length === 0) { %>
+            <p class="w3-text-grey">Este usuario aún no ha iniciado ningún nivel en este curso.</p>
+          <% } else { %>
+            <% niveles.forEach((nivel, nIndex) => { %>
+              <div class="w3-margin-top w3-white w3-round w3-padding">
+                <h4>Nivel: <%= nivel.titulo %></h4>
+                <p><strong>Inicio:</strong> <%= new Date(nivel.fecha_inicio).toLocaleString() %></p>
+                <% if (nivel.fecha_fin) { %>
+                  <p><strong>Finalizado:</strong> <%= new Date(nivel.fecha_fin).toLocaleString() %></p>
+                <% } %>
+                <p><strong>Avance:</strong> <%= nivel.avance %>%</p>
+
+                <h5 class="w3-margin-top">Preguntas del nivel</h5>
+                <canvas id="qchart-<%= cIndex %>-<%= nIndex %>" height="<%= (questionsByLevel[nivel.id_nivel]?.length || 1) * 30 %>"></canvas>
+
+<script>
+  const ctxBar<%= cIndex %><%= nIndex %> = document.getElementById('qchart-<%= cIndex %>-<%= nIndex %>').getContext('2d');
+  new Chart(ctxBar<%= cIndex %><%= nIndex %>, {
+    type: 'bar',
+    data: {
+      labels: <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => `Pregunta ${q.id_pregunta}`)) %>,
+      datasets: [{
+        label: 'Respuestas',
+        data: <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => {
+          if (q.es_correcta === 1) return 1;
+          if (q.es_correcta === 0) return -1;
+          return 0;
+        })) %>,
+        
+        backgroundColor: <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => {
+          if (q.es_correcta === 1) return '#4CAF50';      // green
+          if (q.es_correcta === 0) return '#F44336';      // red
+          return '#9E9E9E';                               // grey for unanswered
+        })) %>
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      scales: {
+        x: {
+          display: false,
+          min: -1,
+          max: 1
+        },
+        y: {
+          ticks: {
+            autoSkip: false
+          }
+        }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const texts = <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => q.texto_pregunta)) %>;
+              return texts[context.dataIndex];
+            }
+          }
+        },
+        legend: { display: false }
+      }
+    }
+  });
+</script>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<script>
+  function toggleCourse(index) {
+    const el = document.getElementById(`course-${index}`);
+    if (el.classList.contains('w3-show')) {
+      el.classList.replace('w3-show', 'w3-hide');
+    } else {
+      el.classList.replace('w3-hide', 'w3-show');
+    }
+  }
+</script>
+
+
+    <script>
+      const sessionData = <%- JSON.stringify(sessionData) %>;
+    
+      // Helper: maps session duration (e.g., 5–120 min) to color intensity
+      function durationToColor(duration) {
+        const min = 0;
+        const max = 120;
+        const clamped = Math.max(min, Math.min(max, duration));
+        const intensity = Math.floor((clamped - min) / (max - min) * 255);
+        return `rgba(33, 150, 243, ${intensity / 255})`; // blue with alpha
+      }
+    
+      const chartData = {
+        datasets: [{
+          label: 'Sesiones del usuario',
+          data: sessionData.map(s => ({
+            x: new Date(s.x),
+            y: 1,
+            backgroundColor: durationToColor(s.duration),
+          })),
+        //   parsing: false,
+          pointRadius: 8,
+          showLine: false
+        }]
+      };
+    
+      const config = {
+        type: 'scatter',
+        data: chartData,
+        options: {
+          scales: {
+            x: {
+              type: 'time',
+              title: { display: true, text: 'Fecha y hora' },
+              time: {
+                unit: 'day',
+                tooltipFormat: 'yyyy-MM-dd HH:mm:ss'
+              }
+            },
+            y: { display: false }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const date = new Date(ctx.raw.x).toLocaleString();
+                  const duration = sessionData[ctx.dataIndex].duration.toFixed(1);
+                  return `Inicio: ${date}, Duración: ${duration} min`;
+                }
+              }
+            },
+            legend: { display: false }
+          }
+        }
+      };
+    
+      new Chart(document.getElementById('sessionScatterChart'), config);
+    </script>
+    <script>
+      function toggleCourse(index) {
+        const el = document.getElementById(`course-${index}`);
+        if (el.classList.contains('w3-show')) {
+          el.classList.replace('w3-show', 'w3-hide');
+        } else {
+          el.classList.replace('w3-hide', 'w3-show');
+        }
+      }
+    </script>
+
+</body>
+</html>
+

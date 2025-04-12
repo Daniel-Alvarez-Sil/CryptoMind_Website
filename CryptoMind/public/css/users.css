@@ -32,3 +32,12 @@ body {
 .big-margin {
   margin-top: 75px; 
 }
+
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.w3-table-all th, .w3-table-all td {
+  white-space: nowrap;
+}
