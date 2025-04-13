@@ -5,56 +5,20 @@
   <title>Login | CryptoMind</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Orbitron:wght@600&display=swap" rel="stylesheet">
+
   <!-- W3.CSS -->
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 
-  <!-- Orbitron Font for Cyber Look -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
-
   <!-- Custom Styles -->
-  <style>
-    body {
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-      color: white;
-    }
-    .login-card {
-      max-width: 400px;
-      margin: auto;
-      margin-top: 10vh;
-      padding: 32px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      backdrop-filter: blur(10px);
-    }
-    input[type="email"],
-    input[type="password"] {
-      background-color: #ffffff10;
-      color: white;
-      border: none;
-    }
-    input[type="email"]::placeholder,
-    input[type="password"]::placeholder {
-      color: #ddd;
-    }
-    .login-btn {
-      background-color: #00e6e6;
-      color: #000;
-    }
-    .login-btn:hover {
-      background-color: #00cccc;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-  </style>
+  <link rel="stylesheet" href="/css/login.css">
+  
 </head>
 <body>
 
   <div class="login-card w3-animate-opacity">
-    <h2>CryptoMind Login</h2>
+    <h2>CryptoMind Admin</h2>
 
     <form method="POST" action="/login" class="w3-container">
 
@@ -70,7 +34,6 @@
 
       <button class="w3-button w3-round-large w3-block login-btn" type="submit">Log In</button>
     </form>
-
   </div>
 
 </body>

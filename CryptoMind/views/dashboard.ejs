@@ -4,12 +4,19 @@
   <meta charset="UTF-8">
   <title>Dashboard - Jugadores</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-  <link rel="stylesheet" href="/css/dashboard.css">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js"></script>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Orbitron:wght@600&display=swap" rel="stylesheet">
 
+  <!-- W3.CSS -->
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+  <!-- Chart.js & Matrix Plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 
 <% if (showNavbar) { %>
@@ -20,163 +27,176 @@
 
   <div class="w3-container w3-padding-32 big-margin">
 
-    <div class="w3-row-padding w3-center">
+    <div class="card-grid w3-center">
 
-      <!-- Card 1: Jugadores Activos -->
-      <div class="w3-third w3-margin-bottom">
-        <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
-          <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Activos</h2>
-          <p class="w3-xlarge w3-text-black"><%= activos %></p>
+      <!-- Tarjetas -->
+      <div class="w3-margin-bottom">
+        <div class="w3-card-4 w3-round-xlarge w3-padding-32 w3-hover-shadow">
+          <h2 class="w3-text-indigo">Jugadores Activos</h2>
+          <p class="w3-xlarge"><%= activos %></p>
         </div>
       </div>
 
-      <!-- Card 2: Promedio de juego -->
-      <div class="w3-third w3-margin-bottom">
-        <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
-          <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Promedio de Juego</h2>
-          <p class="w3-xlarge w3-text-black"><%= promedio %></p>
+      <div class="w3-margin-bottom">
+        <div class="w3-card-4 w3-round-xlarge w3-padding-32 w3-hover-shadow">
+          <h2 class="w3-text-indigo">Promedio de Juego</h2>
+          <p class="w3-xlarge"><%= promedio %></p>
         </div>
       </div>
 
-      <!-- Card 3: Placeholder (add more metrics here) -->
-      <div class="w3-third w3-margin-bottom">
-        <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
-          <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Preguntas Correctas al día</h2>
-          <p class="w3-xlarge w3-text-black"><%= correctas %></p>
+      <div class="w3-margin-bottom">
+        <div class="w3-card-4 w3-round-xlarge w3-padding-32 w3-hover-shadow">
+          <h2 class="w3-text-indigo">Preguntas Correctas al Día</h2>
+          <p class="w3-xlarge"><%= correctas %></p>
+        </div>
+      </div>
+
+      <!-- Ranking Tokens -->
+      <div class="w3-margin-bottom">
+        <div class="w3-card-4 w3-round-xlarge w3-padding-16 w3-hover-shadow">
+          <h2 class="w3-text-indigo">Top 10 Usuarios por Tokens</h2>
+          <ul class="w3-ul w3-hoverable w3-margin-top">
+            <% ranking.forEach((user, index) => { %>
+              <li class="w3-padding-12">
+                <strong><%= index + 1 %>. <%= user.username %></strong>
+                <span class="w3-right w3-tag w3-round"><%= user.tokens %> tokens</span>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Ranking Puntaje -->
+      <div class="w3-margin-bottom">
+        <div class="w3-card-4 w3-round-xlarge w3-padding-16 w3-hover-shadow">
+          <h2 class="w3-text-indigo">Top 10 Usuarios por Puntaje</h2>
+          <ul class="w3-ul w3-hoverable w3-margin-top">
+            <% puntajeRanking.forEach((user, index) => { %>
+              <li class="w3-padding-12">
+                <strong><%= index + 1 %>. <%= user.username %></strong>
+                <span class="w3-right w3-tag w3-round"><%= user.puntaje %> pts</span>
+              </li>
+            <% }) %>
+          </ul>
         </div>
       </div>
       
-      <!-- Card 4: Engagement por país -->
-     <div class="w3-third w3-margin-bottom">
-      <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-16 w3-center w3-hover-shadow">
-        <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Engagement por País</h2>
-        <canvas id="engagementChart" width="300" height="300"></canvas>
-      </div>
-     </div>
-  
-    <!-- Card 5: Heatmap de Sesiones -->
-    <div class="w3-third w3-margin-bottom">
-      <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-16 w3-center w3-hover-shadow" style="height: 400px;">
-        <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Mapa de Calor de Sesiones de Juego</h2>
-        <div style="height: 250px;">
-          <canvas id="heatmapChart" width="100%" height="100%"></canvas>
+      <!-- Gráfico de barras -->
+      <div class="w3-margin-bottom">
+        <div class="w3-card-4 w3-round-xlarge w3-padding-16 w3-hover-shadow">
+          <h2 class="w3-text-indigo">Engagement por País</h2>
+          <div style="height: 100%;">
+            <canvas id="engagementChart"></canvas>
+          </div>
         </div>
       </div>
-    </div>
-    
-    <!-- Card 6: Ranking de Tokens -->
-    <div class="w3-third w3-margin-bottom">
-      <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-16 w3-hover-shadow">
-        <h2 class="w3-center w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Top 10 Usuarios por Tokens</h2>
-        <ul class="w3-ul w3-hoverable w3-margin-top">
-          <% ranking.forEach((user, index) => { %>
-            <li class="w3-padding-12">
-              <strong><%= index + 1 %>. <%= user.username %></strong>
-              <span class="w3-right w3-tag w3-indigo w3-round"><%= user.tokens %> tokens</span>
-            </li>
-          <% }) %>
-        </ul>
+
+      <!-- Heatmap -->
+      <div class="w3-margin-bottom">
+        <div class="w3-card-4 w3-round-xlarge w3-padding-16 w3-hover-shadow" style="height: 400px;">
+          <h2 class="w3-text-indigo">Mapa de Calor de Sesiones</h2>
+          <div style="height: 250px;">
+            <canvas id="heatmapChart"></canvas>
+          </div>
+        </div>
       </div>
-    </div>
-    
-    <!-- Card 7: Ranking por Puntaje -->
-    <div class="w3-third w3-margin-bottom">
-      <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-16 w3-hover-shadow">
-        <h2 class="w3-center w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Top 10 Usuarios por Puntaje</h2>
-        <ul class="w3-ul w3-hoverable w3-margin-top">
-          <% puntajeRanking.forEach((user, index) => { %>
-            <li class="w3-padding-12">
-              <strong><%= index + 1 %>. <%= user.username %></strong>
-              <span class="w3-right w3-tag w3-indigo w3-round"><%= user.puntaje %> pts</span>
-            </li>
-          <% }) %>
-        </ul>
-      </div>
-    </div>
-  
-  
- 
+
     </div>
   </div>
-    <script>
-      const ctx = document.getElementById('engagementChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: <%- JSON.stringify(paises) %>,
-          datasets: [{
-            label: 'Minutos Jugados',
-            data: <%- JSON.stringify(minutosPorPais) %>,
-            backgroundColor: 'rgba(79, 129, 189, 0.6)',
-            borderColor: 'rgba(79, 129, 189, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
-    </script>
-    <script>
-  const heatmapCtx = document.getElementById('heatmapChart').getContext('2d');
-  new Chart(heatmapCtx, {
-    type: 'matrix',
-    data: {
-      datasets: [{
-        label: 'Sesiones por hora/día',
-        data: <%- JSON.stringify(heatmap) %>,
-        backgroundColor(ctx) {
-          const value = ctx.dataset.data[ctx.dataIndex].v;
-          const alpha = value / 10; // Normalize for opacity
-          return `rgba(79, 129, 189, ${Math.min(alpha, 1)})`;
-        },
-        width: ctx => (ctx.chart.chartArea ? ctx.chart.chartArea.width / 24 - 2 : 20),
-        height: ctx => (ctx.chart.chartArea ? ctx.chart.chartArea.height / 7 - 2 : 30)
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            title() { return ''; },
-            label(ctx) {
-              const {x, y, v} = ctx.raw;
-              const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-              return `${days[y]}, ${x}:00 - ${x + 1}:00 — ${v} sesiones`;
-            }
-          }
-        },
-        legend: { display: false }
+
+  <!-- Charts Scripts -->
+  <script>
+    const ctx = document.getElementById('engagementChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: <%- JSON.stringify(paises) %>,
+        datasets: [{
+          label: 'Minutos Jugados',
+          data: <%- JSON.stringify(minutosPorPais) %>,
+          backgroundColor: 'rgb(143, 73, 155)',
+          borderColor: 'rgba(255, 255, 255, 1)',
+          borderWidth: 1
+        }]
       },
-      scales: {
-        x: {
-          type: 'linear',
-          position: 'top',
-          ticks: {
-            stepSize: 1,
-            callback: val => `${val}:00`
-          }
-        },
-        y: {
-          type: 'linear',
-          reverse: true,
-          ticks: {
-            stepSize: 1,
-            callback: val => ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][val]
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true, 
+            color: 'white'
           }
         }
       }
-    }
-  });
-</script>
+    });
+  </script>
+
+  <script>
+    const heatmapCtx = document.getElementById('heatmapChart').getContext('2d');
+    new Chart(heatmapCtx, {
+      type: 'matrix',
+      data: {
+        datasets: [{
+          label: 'Sesiones por hora/día',
+          data: <%- JSON.stringify(heatmap) %>,
+          backgroundColor(ctx) {
+            const value = ctx.dataset.data[ctx.dataIndex].v;
+            const alpha = value / 10;
+            return `rgba(143, 73, 155, ${Math.min(alpha, 1)})`;
+          },
+          borderColor: 'rgba(255, 255, 255, 1)',
+           borderWidth(ctx) {
+            const value = ctx.dataset.data[ctx.dataIndex].v;
+            return value === 0 ? 0 : 1;
+          },
+          width: ctx => (ctx.chart.chartArea ? ctx.chart.chartArea.width / 24 - 2 : 20),
+          height: ctx => (ctx.chart.chartArea ? ctx.chart.chartArea.height / 7 - 2 : 30)
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title() { return ''; },
+              label(ctx) {
+                const {x, y, v} = ctx.raw;
+                const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                return `${days[y]}, ${x}:00 - ${x + 1}:00 — ${v} sesiones`;
+              }
+            }
+          },
+          legend: { display: false }
+        },
+        scales: {
+          x: {
+            type: 'linear',
+            position: 'top',
+            ticks: {
+              stepSize: 1,
+              callback: val => `${val}:00`, 
+              color: 'white'
+            }, 
+            grid: {
+              color: 'rgba(255, 255, 255, 0.3)' // white grid lines, slightly transparent
+            }
+          },
+          y: {
+            type: 'linear',
+            reverse: true,
+            ticks: {
+              stepSize: 1,
+              callback: val => ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][val],
+              color: 'white'
+            }, 
+             grid: {
+              color: 'rgba(255, 255, 255, 0.3)' // white grid lines, slightly transparent
+            }
+          }
+        }
+      }
+    });
+  </script>
 </body>
-
 </html>
-

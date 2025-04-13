@@ -1,0 +1,265 @@
+.big-margin {
+  margin-top: 75px; 
+}
+
+:root {
+  --pink: #f01464;
+  --magenta: #c7328a;
+  --purple: #8f499b;
+  --blue1: #585293;
+  --blue2: #325179;
+  --blue3: #2f4858;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: linear-gradient(to right, var(--pink), var(--magenta), var(--purple));
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+
+.w3-content {
+  max-width: 1000px;
+}
+
+h2, h3, h4, h5 {
+  font-family: 'Orbitron', sans-serif;
+  color: white;
+}
+
+.w3-card-4 {
+  background-color: #000;
+  color: white;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+}
+
+.w3-card-4:hover {
+  transform: translateY(-3px);
+  transition: transform 0.3s ease;
+}
+
+.w3-button {
+  font-weight: 600;
+  /*background-color: rgba(255, 255, 255, 0.1);*/
+  color: white;
+  border: none;
+}
+
+.w3-button:hover {
+  background-color: var(--blue2);
+}
+
+.w3-pale-blue {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: white;
+}
+
+canvas {
+  background-color: transparent !important;
+}
+
+p {
+  font-weight: 400;
+}
+
+/* Chart tooltip override */
+.chartjs-tooltip {
+  font-size: 0.9rem;
+}
+
+/* Accordion icons */
+.w3-button span {
+  transition: transform 0.3s ease;
+}
+
+.w3-show + .w3-button span {
+  transform: rotate(180deg);
+}
+
+/* Responsive padding */
+@media (max-width: 768px) {
+  .w3-padding-24 {
+    padding: 16px !important;
+  }
+}
+
+/* Center and size cards */
+.user-info-card,
+.user-sessions-card {
+  max-width: 600px;
+  margin: 32px auto;
+  padding: 24px 32px;
+  background-color: #000;
+  color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
+}
+
+/* Header icons */
+.user-info-card h2,
+.user-sessions-card h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: white;
+  margin-bottom: 24px;
+}
+
+/* Table for general info */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto;
+  font-size: 1rem;
+}
+
+.info-table th,
+.info-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-table th {
+  text-align: left;
+  font-weight: 600;
+  width: 40%;
+  color: #f0f0f0;
+}
+
+.info-table td {
+  text-align: left;
+  color: #fff;
+}
+
+/* Chart container styling */
+.chart-container {
+  width: 100%;
+  height: 400px;
+}
+
+@media (max-width: 600px) {
+  .user-info-card, .user-sessions-card {
+    padding: 16px;
+  }
+
+  .info-table th,
+  .info-table td {
+    padding: 10px;
+  }
+}
+
+.level-card {
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-top: 16px;
+  color: white;
+  position: relative;
+  width: 100%;
+}
+
+/* Add white border and subtle glow */
+.level-bordered {
+  border: 1px solid white;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.08);
+}
+
+/* Optional hover effect */
+.level-card:hover {
+  border-color: var(--magenta);
+  box-shadow: 0 0 12px rgba(240, 20, 100, 0.25);
+}
+
+/* Level header style */
+.level-card h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.course-section {
+  max-width: 1000px;
+  margin: 48px auto;
+  padding: 32px;
+  border-radius: 16px;
+  background-color: #000;
+  color: white;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
+}
+
+.course-section h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.6rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.course-card {
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.course-toggle {
+  background-color: transparent;
+  color: white;
+  padding: 16px;
+  font-weight: bold;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.3s ease;
+}
+
+.course-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.toggle-icon {
+  float: right;
+  transition: transform 0.3s ease;
+}
+
+.course-content {
+  display: flex;
+  justify-content: center; /* Centers children horizontally */
+  align-items: center;
+  padding: 20px 24px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .course-section {
+    padding: 20px;
+  }
+
+  .course-toggle {
+    padding: 14px;
+    font-size: 0.95rem;
+  }
+
+  .level-card {
+    padding: 14px;
+  }
+}

@@ -15,51 +15,56 @@
       <%- include ('./components/navbar.ejs') %>
 <% } %>
 
-<body class="w3-display-container w3-light-grey">
+<body class="w3-display-container">
   
    <div class=" w3-margin-bottom big-margin w3-margin-right w3-margin-left">
-      <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+      <div class="w3-card-4  w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
         <h2 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Jugadores Registrados</h2>
-
         
-        <div class="table-container w3-responsive">
-          <table class="w3-table-all w3-hoverable">
-            <thead>
-              <tr class="w3-light-blue">
-                <th>ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Nombre</th>
-                <th>Nacimiento</th>
-                <th>País</th>
-                <th>Género</th>
-                <th>Tokens</th>
-                <th>Puntaje</th>
-                <th>Vidas</th>
-                <th>Creado en</th>
-                <th>Última conexión</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% usuarios.forEach(usuario => { %>
-                <tr class="clickable-row" data-id="<%= usuario.id_usuario %>">
-                  <td><%= usuario.id_usuario %></td>
-                  <td><%= usuario.username %></td>
-                  <td><%= usuario.correo %></td>
-                  <td><%= usuario.nombre %></td>
-                  <td><%= usuario.nacimiento ? new Date(usuario.nacimiento).toISOString().split('T')[0] : 'N/A' %></td>
-                  <td><%= usuario.pais %></td>
-                  <td><%= usuario.genero || 'N/A' %></td>
-                  <td><%= usuario.tokens %></td>
-                  <td><%= usuario.puntaje %></td>
-                  <td><%= usuario.vidas %></td>
-                  <td><%= usuario.creado_en ? new Date(usuario.creado_en).toISOString().split('T')[0] : 'N/A' %></td>
-                  <td><%= usuario.ultima_conexion ? new Date(usuario.ultima_conexion).toISOString().split('T')[0] : 'Nunca' %></td>
+        <p>Selecciona un usuario para visualizar las métricas individuales. </p>
+        
+        <div class="table-container">
+          <div class="table-scroll">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Nombre</th>
+                  <th>Nacimiento</th>
+                  <th>País</th>
+                  <th>Género</th>
+                  <th>Tokens</th>
+                  <th>Puntaje</th>
+                  <th>Vidas</th>
+                  <th>Creado en</th>
+                  <th>Última conexión</th>
                 </tr>
-              <% }) %>
-            </tbody>
-          </table>
-        </div> 
+              </thead>
+              <tbody>
+                <% usuarios.forEach(usuario => { %>
+                  <tr class="clickable-row" data-id="<%= usuario.id_usuario %>">
+                    <td><%= usuario.id_usuario %></td>
+                    <td><%= usuario.username %></td>
+                    <td><%= usuario.correo %></td>
+                    <td><%= usuario.nombre %></td>
+                    <td><%= usuario.nacimiento ? new Date(usuario.nacimiento).toISOString().split('T')[0] : 'N/A' %></td>
+                    <td><%= usuario.pais %></td>
+                    <td><%= usuario.genero || 'N/A' %></td>
+                    <td><%= usuario.tokens %></td>
+                    <td><%= usuario.puntaje %></td>
+                    <td><%= usuario.vidas %></td>
+                    <td><%= usuario.creado_en ? new Date(usuario.creado_en).toISOString().split('T')[0] : 'N/A' %></td>
+                    <td><%= usuario.ultima_conexion ? new Date(usuario.ultima_conexion).toISOString().split('T')[0] : 'Nunca' %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
       </div> 
     </div> 
 
@@ -67,21 +72,21 @@
 <div class="w3-row-padding w3-margin-top">
 
   <div class="w3-col s12 m6 l3 w3-margin-bottom">
-    <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+    <div class="w3-card-4  w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
       <h3 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Demográfica de Países</h3>
       <canvas id="countryChart"></canvas>
     </div>
   </div>
 
   <div class="w3-col s12 m6 l3 w3-margin-bottom">
-    <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+    <div class="w3-card-4  w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
       <h3 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Demográfica de Géneros</h3>
       <canvas id="genderChart"></canvas>
     </div>
   </div>
 
   <div class="w3-col s12 l6 w3-margin-bottom">
-    <div class="w3-card-4 w3-white w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
+    <div class="w3-card-4  w3-round-xlarge w3-padding-32 w3-center w3-hover-shadow">
       <h3 class="w3-text-indigo" style="font-family: 'Orbitron', sans-serif;">Timeline de Registro</h3>
       <canvas id="createdChart"></canvas>
     </div>
@@ -172,8 +177,8 @@
   const ctx = document.getElementById('createdChart').getContext('2d');
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-  gradient.addColorStop(0, 'rgba(76, 175, 80, 0.4)');
-  gradient.addColorStop(1, 'rgba(76, 175, 80, 0)');
+  gradient.addColorStop(0, 'rgba(143, 73, 155, 0.4)');
+  gradient.addColorStop(1, 'rgba(143, 73, 155, 0)');
 
   new Chart(ctx, {
     type: 'line',
@@ -182,7 +187,7 @@
       datasets: [{
         label: 'Usuarios creados por fecha',
         data: sortedCreatedCounts,
-        borderColor: '#388e3c',
+        borderColor: '#c7328a',
         backgroundColor: gradient,
         fill: true,
         tension: 0.4,

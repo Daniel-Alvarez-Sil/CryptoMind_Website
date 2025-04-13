@@ -1,19 +1,57 @@
-<!-- Top menu bar -->
+<!-- Navbar embellecido -->
+<style>
+  :root {
+    --pink: #f01464;
+    --magenta: #c7328a;
+    --purple: #8f499b;
+    --blue1: #585293;
+    --blue2: #325179;
+    --blue3: #2f4858;
+  }
+
+  .navbar {
+    background-color: black;
+    font-family: 'Montserrat', sans-serif;
+    border-bottom-style: solid;
+    border-color: white;
+    border-width: 5px; 
+  }
+
+  .navbar a {
+    color: white;
+    transition: 0.3s;
+  }
+
+  .navbar a:hover {
+    background-color: black;
+    color: white !important;
+  }
+
+  .navbar .w3-hover-red:hover {
+    background-color: var(--pink) !important;
+  }
+
+  #navMenu a {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+</style>
+
 <div class="w3-top">
-  <div class="w3-bar w3-black w3-large w3-padding w3-card">
+  <div class="w3-bar navbar w3-large w3-padding w3-card">
     <a href="javascript:void(0);" class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right" onclick="toggleMenu()" title="Toggle Navigation Menu">
       ☰
     </a>
-    <a href="/dashboard" class="w3-bar-item w3-button w3-hover-teal">Dashboard</a>
-    <a href="/users" class="w3-bar-item w3-button w3-hide-small w3-hover-teal">Usuarios</a>
-    <a href="/education" class="w3-bar-item w3-button w3-hide-small w3-hover-teal">Educación</a>
+    <a href="/dashboard" class="w3-bar-item w3-button w3-hover-red">Dashboard</a>
+    <a href="/users" class="w3-bar-item w3-button w3-hide-small w3-hover-red">Usuarios</a>
+    <a href="/education" class="w3-bar-item w3-button w3-hide-small w3-hover-red">Educación</a>
     <a href="/logout" class="w3-bar-item w3-button w3-right w3-hover-red">Salir</a>
   </div>
 
   <!-- Collapsible menu for small screens -->
-  <div id="navMenu" class="w3-bar-block w3-black w3-hide w3-hide-large w3-hide-medium">
-    <a href="/metrics" class="w3-bar-item w3-button w3-hover-teal">Metrics</a>
-    <a href="/settings" class="w3-bar-item w3-button w3-hover-teal">Settings</a>
+  <div id="navMenu" class="w3-bar-block navbar w3-hide w3-hide-large w3-hide-medium">
+    <a href="/users" class="w3-bar-item w3-button">Usuarios</a>
+    <a href="/education" class="w3-bar-item w3-button">Educación</a>
   </div>
 </div>
 

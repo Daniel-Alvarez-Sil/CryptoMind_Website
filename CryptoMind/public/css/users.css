@@ -1,11 +1,17 @@
 body {
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Montserrat', sans-serif;
+  background: linear-gradient(to right, var(--pink), var(--magenta), var(--purple));
+  margin: 0;
+  color: #fff;
 }
 
-.table-container {
-  overflow-x: auto;
-  margin: 30px;
+h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: white;
 }
+
 
 .chart-container {
   display: flex;
@@ -16,28 +22,108 @@ body {
   padding: 20px;
 }
 
-.chart-wrapper {
-  flex: 1 1 400px;
-  min-width: 300px;
-  max-width: 600px;
+.w3-card-4 {
+  padding: 25px;
+  background-color: #000; /* black background */
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2); /* white glow */
+  color: #fff;
+  transition: transform 0.2s ease;
+  font-weight: 500;
 }
 
-.full-width-chart {
-  width: 100%;
-  max-width: 100%;
-  padding: 0 30px;
-  margin: 40px auto;
+.w3-card-4:hover {
+  transform: translateY(-4px);
 }
+
+.w3-card-4 p,
+.w3-card-4 li,
+.w3-card-4 span {
+  color: #f0f0f0; /* light grey for legibility */
+  font-weight: 400;
+}
+
+.w3-tag {
+  background-color: var(--magenta);
+  font-weight: 600;
+}
+
+.w3-text-indigo {
+  color: var(--pink) !important;
+  font-weight: 600;
+}
+
+ul.w3-ul li {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/*.chart-wrapper {*/
+/*  flex: 1 1 400px;*/
+/*  min-width: 300px;*/
+/*  max-width: 600px;*/
+/*}*/
+
+/*.full-width-chart {*/
+/*  width: 100%;*/
+/*  max-width: 100%;*/
+/*  padding: 0 30px;*/
+/*  margin: 40px auto;*/
+/*}*/
 
 .big-margin {
   margin-top: 75px; 
 }
 
 .table-container {
+  margin-top: 32px;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-.w3-table-all th, .w3-table-all td {
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Montserrat', sans-serif;
+  background-color: transparent;
+  color: white;
+  min-width: 960px;
+}
+
+.modern-table thead {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.modern-table th {
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.modern-table td {
+  padding: 12px 16px;
+  font-weight: 400;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   white-space: nowrap;
 }
+
+.modern-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .modern-table th, .modern-table td {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+

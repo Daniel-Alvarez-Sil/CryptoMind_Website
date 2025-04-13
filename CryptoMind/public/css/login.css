@@ -1,0 +1,74 @@
+    :root {
+      --pink: #f01464;
+      --magenta: #c7328a;
+      --purple: #8f499b;
+      --blue1: #585293;
+      --blue2: #325179;
+      --blue3: #2f4858;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(to right, var(--pink), var(--magenta), var(--purple));
+      color: white;
+      margin: 0;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .login-card {
+      max-width: 400px;
+      width: 90%;
+      padding: 32px;
+      background: black;
+      border-radius: 16px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(12px);
+    }
+
+    h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: white;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+    }
+
+    input[type="email"]::placeholder,
+    input[type="password"]::placeholder {
+      color: #dddddd;
+    }
+
+    .login-btn {
+      background-color: var(--magenta);
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+
+    .login-btn:hover {
+      background-color: var(--purple);
+    }
+
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 24px;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+    }

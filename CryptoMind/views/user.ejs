@@ -5,8 +5,11 @@
   <title>Métricas de Usuario</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="/css/user.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 </head>
 
 <% if (showNavbar) { %>
@@ -14,132 +17,138 @@
 <% } %>
 
 <body class="w3-light-grey">
-  <div class="w3-content w3-margin-top w3-padding">
+  <div class="w3-content w3-padding big-margin">
 
-    <!-- Card: General Info -->
-    <div class="w3-card-4 w3-white w3-round-large w3-padding-24 w3-margin-bottom">
-      <h2 class="w3-center">Información General</h2>
-      <p><strong>ID:</strong> <%= user.id_usuario %></p>
-      <p><strong>Nombre:</strong> <%= user.nombre %></p>
-      <p><strong>Email:</strong> <%= user.correo %></p>
-      <p><strong>Puntaje:</strong> <%= user.puntaje %></p>
-      <p><strong>Tokens:</strong> <%= user.tokens %></p>
+     <!-- Card: Información General -->
+    <div class="w3-card-4 user-info-card w3-center">
+      <h2><i class="fa fa-user-circle-o w3-margin-right"></i>Información General</h2>
+      <table class="info-table">
+        <tr><th>ID</th><td><%= user.id_usuario %></td></tr>
+        <tr><th>Nombre</th><td><%= user.nombre %></td></tr>
+        <tr><th>Email</th><td><%= user.correo %></td></tr>
+        <tr><th>Puntaje</th><td><%= user.puntaje %></td></tr>
+        <tr><th>Tokens</th><td><%= user.tokens %></td></tr>
+        <tr><th>Genero</th><td><%= user.genero %></td></tr>
+        <tr><th>País</th><td><%= user.pais %></td></tr>
+      </table>
     </div>
-
-    <!-- Card: Scatter Chart -->
-    <div class="w3-card-4 w3-white w3-round-large w3-padding-24">
-      <h2 class="w3-center">Sesiones del Usuario</h2>
-      <canvas id="sessionScatterChart"></canvas>
+    
+    <!-- Card: Sesiones del Usuario -->
+    <div class="w3-card-4 user-sessions-card w3-center">
+      <h2><i class="fa fa-line-chart w3-margin-right"></i>Sesiones del Usuario</h2>
+      <div class="chart-container">
+        <canvas id="sessionScatterChart"></canvas>
+      </div>
     </div>
 
   </div>
-  <!-- Courses Section -->
-   <div class="w3-card-4 w3-white w3-round-large w3-padding-24 w3-margin-top">
-  <h2 class="w3-center">Cursos Inscritos</h2>
+  <!--Cursos -->
+  <div class="w3-card-4 course-section w3-center">
+    <h2><i class="fa fa-graduation-cap w3-margin-right"></i>Cursos Inscritos</h2>
+  
+    <% if (courses.length === 0) { %>
+      <p class="w3-center w3-text-grey">El usuario no está inscrito en ningún curso.</p>
+    <% } else { %>
+      <% courses.forEach((curso, cIndex) => { %>
+        <div class="course-card w3-margin-top">
+          <button onclick="toggleCourse(<%= cIndex %>)"
+                  class="course-toggle w3-button w3-block w3-left-align">
+            <strong><%= curso.nombre %></strong>
+            <span class="toggle-icon">&#9660;</span>
+          </button>
+  
+          <div id="course-<%= cIndex %>" class="course-content w3-hide">
+            <p><strong>Descripción:</strong> <%= curso.descripcion || 'Sin descripción' %></p>
+            <p><strong>Estado:</strong> <%= curso.estado %></p>
+            <p><strong>Dificultad:</strong> <%= curso.dificultad %>/10</p>
+            <p><strong>Inscrito desde:</strong> <%= new Date(curso.inscrito_en).toLocaleDateString() %></p>
+  
+            <% const niveles = levelsByCourse.filter(l => l.id_curso === curso.id_curso); %>
+            <% if (niveles.length === 0) { %>
+              <p class="w3-text-grey">Este usuario aún no ha iniciado ningún nivel en este curso.</p>
+            <% } else { %>
+              <% niveles.forEach((nivel, nIndex) => { %>
+                <div class="level-card level-bordered w3-margin-top">
+                  <h4><i class="fa fa-layer-group w3-margin-right"></i>Nivel: <%= nivel.titulo %></h4>
+                  <p><strong>Inicio:</strong> <%= new Date(nivel.fecha_inicio).toLocaleString() %></p>
+                  <% if (nivel.fecha_fin) { %>
+                    <p><strong>Finalizado:</strong> <%= new Date(nivel.fecha_fin).toLocaleString() %></p>
+                  <% } %>
+                  <p><strong>Avance:</strong> <%= nivel.avance %>%</p>
+  
+                  <h5 class="w3-margin-top">Preguntas del nivel</h5>
+                  <canvas id="qchart-<%= cIndex %>-<%= nIndex %>" height="<%= (questionsByLevel[nivel.id_nivel]?.length || 1) * 30 %>"></canvas>
+                  <script>
+                    const ctxBar<%= cIndex %><%= nIndex %> = document.getElementById('qchart-<%= cIndex %>-<%= nIndex %>').getContext('2d');
+                    new Chart(ctxBar<%= cIndex %><%= nIndex %>, {
+                      type: 'bar',
+                      data: {
+                        labels: <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => `Pregunta ${q.id_pregunta}`)) %>,
+                        datasets: [{
+                          label: 'Respuestas',
+                          data: <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => {
+                            if (q.es_correcta === 1) return 1;
+                            if (q.es_correcta === 0) return -1;
+                            return 0;
+                          })) %>,
+                          
+                          backgroundColor: <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => {
+                            if (q.es_correcta === 1) return '#4CAF50';      // green
+                            if (q.es_correcta === 0) return '#F44336';      // red
+                            return '#9E9E9E';                               // grey for unanswered
+                          })) %>
+                        }]
+                      },
+                      options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        scales: {
+                          x: {
+                            display: false,
+                            min: -1,
+                            max: 1
+                          },
+                          y: {
+                            ticks: {
+                              autoSkip: false
+                            }
+                          }
+                        },
+                        plugins: {
+                          tooltip: {
+                            callbacks: {
+                              label: function(context) {
+                                const texts = <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => q.texto_pregunta)) %>;
+                                return texts[context.dataIndex];
+                              }
+                            }
+                          },
+                          legend: { display: false }
+                        }
+                      }
+                    });
+                  </script>
 
-  <% if (courses.length === 0) { %>
-    <p class="w3-center w3-text-grey">El usuario no está inscrito en ningún curso.</p>
-  <% } else { %>
-    <% courses.forEach((curso, cIndex) => { %>
-      <div class="w3-margin-top">
-        <button onclick="toggleCourse(<%= cIndex %>)"
-                class="w3-button w3-block w3-left-align w3-light-grey w3-round-large">
-          <strong><%= curso.nombre %></strong>
-          <span class="w3-right">&#9660;</span>
-        </button>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
 
-        <div id="course-<%= cIndex %>" class="w3-container w3-hide w3-padding w3-pale-blue w3-round-large">
 
-          <p><strong>Descripción:</strong> <%= curso.descripcion || 'Sin descripción' %></p>
-          <p><strong>Estado:</strong> <%= curso.estado %></p>
-          <p><strong>Dificultad:</strong> <%= curso.dificultad %>/10</p>
-          <p><strong>Inscrito desde:</strong> <%= new Date(curso.inscrito_en).toLocaleDateString() %></p>
-
-          <% const niveles = levelsByCourse.filter(l => l.id_curso === curso.id_curso); %>
-          <% if (niveles.length === 0) { %>
-            <p class="w3-text-grey">Este usuario aún no ha iniciado ningún nivel en este curso.</p>
-          <% } else { %>
-            <% niveles.forEach((nivel, nIndex) => { %>
-              <div class="w3-margin-top w3-white w3-round w3-padding">
-                <h4>Nivel: <%= nivel.titulo %></h4>
-                <p><strong>Inicio:</strong> <%= new Date(nivel.fecha_inicio).toLocaleString() %></p>
-                <% if (nivel.fecha_fin) { %>
-                  <p><strong>Finalizado:</strong> <%= new Date(nivel.fecha_fin).toLocaleString() %></p>
-                <% } %>
-                <p><strong>Avance:</strong> <%= nivel.avance %>%</p>
-
-                <h5 class="w3-margin-top">Preguntas del nivel</h5>
-                <canvas id="qchart-<%= cIndex %>-<%= nIndex %>" height="<%= (questionsByLevel[nivel.id_nivel]?.length || 1) * 30 %>"></canvas>
-
-<script>
-  const ctxBar<%= cIndex %><%= nIndex %> = document.getElementById('qchart-<%= cIndex %>-<%= nIndex %>').getContext('2d');
-  new Chart(ctxBar<%= cIndex %><%= nIndex %>, {
-    type: 'bar',
-    data: {
-      labels: <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => `Pregunta ${q.id_pregunta}`)) %>,
-      datasets: [{
-        label: 'Respuestas',
-        data: <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => {
-          if (q.es_correcta === 1) return 1;
-          if (q.es_correcta === 0) return -1;
-          return 0;
-        })) %>,
-        
-        backgroundColor: <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => {
-          if (q.es_correcta === 1) return '#4CAF50';      // green
-          if (q.es_correcta === 0) return '#F44336';      // red
-          return '#9E9E9E';                               // grey for unanswered
-        })) %>
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      scales: {
-        x: {
-          display: false,
-          min: -1,
-          max: 1
-        },
-        y: {
-          ticks: {
-            autoSkip: false
-          }
-        }
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const texts = <%- JSON.stringify((questionsByLevel[nivel.id_nivel] || []).map(q => q.texto_pregunta)) %>;
-              return texts[context.dataIndex];
-            }
-          }
-        },
-        legend: { display: false }
+  <script>
+    function toggleCourse(index) {
+      const el = document.getElementById(`course-${index}`);
+      if (el.classList.contains('w3-show')) {
+        el.classList.replace('w3-show', 'w3-hide');
+      } else {
+        el.classList.replace('w3-hide', 'w3-show');
       }
     }
-  });
-</script>
-              </div>
-            <% }) %>
-          <% } %>
-        </div>
-      </div>
-    <% }) %>
-  <% } %>
-</div>
-
-<script>
-  function toggleCourse(index) {
-    const el = document.getElementById(`course-${index}`);
-    if (el.classList.contains('w3-show')) {
-      el.classList.replace('w3-show', 'w3-hide');
-    } else {
-      el.classList.replace('w3-hide', 'w3-show');
-    }
-  }
-</script>
+  </script>
 
 
     <script>
@@ -151,7 +160,7 @@
         const max = 120;
         const clamped = Math.max(min, Math.min(max, duration));
         const intensity = Math.floor((clamped - min) / (max - min) * 255);
-        return `rgba(33, 150, 243, ${intensity / 255})`; // blue with alpha
+        return `rgba(143, 73, 155, ${intensity / 255})`; // blue with alpha
       }
     
       const chartData = {
@@ -199,16 +208,6 @@
       };
     
       new Chart(document.getElementById('sessionScatterChart'), config);
-    </script>
-    <script>
-      function toggleCourse(index) {
-        const el = document.getElementById(`course-${index}`);
-        if (el.classList.contains('w3-show')) {
-          el.classList.replace('w3-show', 'w3-hide');
-        } else {
-          el.classList.replace('w3-hide', 'w3-show');
-        }
-      }
     </script>
 
 </body>
