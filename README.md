@@ -16,9 +16,9 @@ sudo nano ~/.bashrc
 ```
 Add the following lines at the end of the open file. 
 ```bash
-export MYSQL_HOST="some_host"
+export MYSQL_HOST="db-cryptomind.cmkp6fsa6pac.us-east-1.rds.amazonaws.com"
 export MYSQL_USER="admin"
-export MYSQL_PASSWORD="some_password"
+export MYSQL_PASSWORD="P0K3M0NJ4P4N26_m"
 ```
 ---
 Install dependencies. 
@@ -30,3 +30,16 @@ Run project.
 ..CryptoMind_Website/CryptoMind $ nodemon app.mjs
 ```
 
+## Running the Website. 
+When running the website on your machine, the login will prompt you to insert some credentials. When this happens, use the following credentials: 
+- Username: das@gmail.com
+- Password: prueba123
+![Imagen de WhatsApp 2025-04-12 a las 20 23 46_19c98ece](https://github.com/user-attachments/assets/80bacaee-ba45-4947-9927-a9aa00bce9fc)
+
+Great! You are now inside the Official CryptoMind Website for Admins. There are three main modules of the website:
+- Dashboard: contains important metrics to measure the engagement and impact of the game.
+- Users: displays important information about users, as well as an analysis of the demographics of all users (gender, country, etc...).
+  - Individual User: displays important information about an individual user, specially concerning its engagement with the courses and quizzes within the game.
+- Courses: allows the visualization of the impact a course, and its corresponding levels, has had on the players that consume the game. Ex., how many users are "enrolled" on a certain course, how many users have played (or are playing) a certain level of a course. 
+
+__The ultimate purpose of this web project is to allow for a better understanding of the performance of the game. So as to make the necessary changes to increase its public reach.__
