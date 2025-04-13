@@ -1,34 +1,177 @@
+:root {
+  --blue-dark: #325179;
+  --teal: #00bfa5;
+  --white-soft: rgba(255, 255, 255, 0.08);
+}
+
 body {
-  font-family: 'Orbitron', sans-serif;
-}
-.curso-card {
-  margin-bottom: 40px;
-}
-.curso-header {
-  font-family: 'Orbitron', sans-serif;
-}
-.categoria-tag {
-  margin-right: 5px;
-}
-.nivel-panel {
-  margin-bottom: 16px;
+  font-family: 'Montserrat', sans-serif;
+  background: linear-gradient(to right, #f01464, #c7328a, #8f499b);
+  color: white;
+  margin: 0;
+  padding: 0;
 }
 
-.chart-container {
+h2, h4 {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.w3-card-4 {
+  background-color: #000;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.w3-card-4:hover {
+  transform: translateY(-2px);
+  transition: transform 0.3s ease;
+}
+
+.w3-container.big-margin {
+  max-width: 1100px;
+  margin: 64px auto;
+  padding: 16px;
+}
+
+header.w3-blue {
+  background-color: var(--blue-dark) !important;
+  color: white;
+  padding: 16px 24px;
+  font-size: 1.2rem;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  align-items: flex-start;
-  gap: 30px;
-  padding: 20px;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
 }
 
-.chart-wrapper {
-  flex: 1 1 400px;
-  min-width: 300px;
-  max-width: 350px;
+header.w3-blue i {
+  transition: transform 0.3s ease;
+}
+
+.w3-container.w3-hide {
+  background-color: #0f0f0f;
+}
+
+.categoria-tag {
+  margin: 4px 6px 4px 0;
+  background-color: var(--teal) !important;
+  color: white;
+  font-weight: 500;
+}
+
+.nivel-panel {
+  background-color: var(--white-soft);
+  border-left: 4px solid var(--blue-dark) !important;
+  padding: 16px;
+  margin-top: 20px;
+  border-radius: 8px;
+}
+
+.nivel-panel h4 {
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.w3-panel.w3-pale-yellow {
+  background-color: rgba(255, 235, 59, 0.1) !important;
+  border-color: #fff3cd !important;
+  color: white;
+  margin-top: 16px;
+}
+
+.w3-panel.w3-pale-yellow strong {
+  color: #ffeb3b;
+}
+
+.w3-ul li {
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.w3-ul li.w3-green {
+  background-color: rgba(76, 175, 80, 0.15) !important;
+  color: #c8e6c9 !important;
+}
+
+.w3-ul li.w3-light-grey {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #e0e0e0;
+}
+
+.w3-tag.w3-blue {
+  background-color: #2196f3 !important;
+}
+
+canvas {
+  background: transparent;
+  margin-top: 12px;
+}
+
+@media (max-width: 768px) {
+  header.w3-blue h2 {
+    font-size: 1.1rem;
+  }
+
+  .w3-container.big-margin {
+    margin: 32px 16px;
+  }
+
+  .nivel-panel {
+    padding: 12px;
+  }
 }
 
 .big-margin {
   margin-top: 75px; 
+}
+
+/* Fix black text on W3.CSS panels and backgrounds */
+.w3-panel,
+.w3-ul,
+.w3-container,
+.w3-card-4,
+.w3-light-grey,
+.w3-white,
+.w3-pale-yellow {
+  color: white !important;
+}
+
+/* Ensure tags and spans are visible */
+.w3-tag,
+span,
+p,
+li {
+  color: white !important;
+}
+
+/* Override specific w3 background colors that make text hard to read */
+.w3-light-grey {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.w3-white {
+  background-color: #000 !important;
+}
+
+/* Chart titles and headers */
+h1, h2, h3, h4, h5, h6 {
+  color: white !important;
+}
+
+canvas {
+  width: 500px;
+}
+
+.center-img {
+  display: block;
+  margin-top: 50px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+  height: auto;
 }

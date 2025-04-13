@@ -278,7 +278,8 @@ app.post('/login', async (req, res) => {
     const user = rows[0];
     if (!user) {
       console.log("No hay usuarios. "); 
-      return res.status(401).send('Invalid credentials');
+      res.redirect('/login');
+      return; 
     }
     
     
@@ -291,7 +292,8 @@ app.post('/login', async (req, res) => {
     // if (!passwordMatch) {
     if (contrasena.trim() != user.contrasena.trim()) {
       console.log(contrasena, user.contrasena); 
-      return res.status(401).send('Invalid credentials');
+      res.redirect('/login');
+      return; 
     }
 
     req.session.user = {
@@ -337,7 +339,7 @@ app.get('/login', (req, res) => {
 
 // Página de inicio
 app.get('/', ensureAdmin, (req, res) => {
-  res.render('home', { showNavbar: true });
+  res.render('dashboard', { showNavbar: true });
 });
 
 // Página de usuarios
