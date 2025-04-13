@@ -7,10 +7,13 @@
  *----------------------------------------------------------*/
 
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import mysql from 'mysql2/promise';
 import fetch from 'node-fetch'; 
 import session from 'express-session';
 import bcrypt from 'bcrypt';
+import backupRouter from './routes/backup.mjs';
 
 
 const app = express();
@@ -133,7 +136,7 @@ app.post('/unity/login', async (req, res) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ emailDatos: emailDatos})
+        body: JSON.stringify({ username: emailDatos})
       });
       res.status(200).json({ message: 'Login successful' });
       console.log(`El usuario, ${emailDatos}, inicio sesión. `);
@@ -161,7 +164,7 @@ app.post('/sesion/start', async (req, res) => {
     connection = await dbConnect();
 
     const [users] = await connection.execute(
-      'SELECT id_usuario FROM usuario WHERE username = ?',
+      'SELECT id_usuario FROM usuario WHERE correo = ?',
       [username]
     );
 
@@ -244,6 +247,54 @@ app.post('/sesion/end', async (req, res) => {
     if (connection) await connection.end();
   }
 });
+
+// Servicio para registrar que un jugador comienza un curso
+app.post('/curso/start', async (req, res) => {
+  const { id_curso, nombre } = req.body;
+
+  if (!id_curso || !nombre) {
+    return res.status(400).json({ error: 'Missing credentials' });
+  }
+
+  let connection;
+  try {
+    connection = await dbConnect();
+
+    // Find the user ID from the name (assuming `nombre` is unique)
+    const [userRows] = await connection.execute(
+      'SELECT id_usuario FROM usuario WHERE nombre = ?',
+      [nombre]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const id_usuario = userRows[0].id_usuario;
+
+    // Register the course start (assuming there's a table usuario_curso with fields id_usuario, id_curso, inicio_en)
+    const now = new Date();
+    await connection.execute(
+      'INSERT INTO usuario_curso (id_usuario, id_curso, inicio_en) VALUES (?, ?, ?)',
+      [id_usuario, id_curso, now]
+    );
+
+    res.status(201).json({ message: 'Course started successfully' });
+
+  } catch (error) {
+    console.error('Error starting course:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    if (connection) connection.end();
+  }
+});
+
+// Servicio para registrar que un jugador finaliza un curso
+app.post('/curso/end', async(req, res) => {
+  
+}); 
+
+// 
 
 // app.get('/', async (req, res) => {
 
@@ -446,7 +497,6 @@ app.get('/users/:id', async (req, res) => {
   }
 });
 
-
 // Página de cursos
 app.get('/education', ensureAdmin, async (req, res) => {
   const connection = await dbConnect();
@@ -614,6 +664,12 @@ app.get('/dashboard', ensureAdmin, async (req, res) => {
   } catch (error) {
     res.status(500).send('Error fetching active players');
   }
+});
+
+// Página de respaldo de base de datos
+app.use('/backup', backupRouter);
+app.get('/', (req, res) => {
+  res.redirect('/backup');
 });
 
 // Página de recurso no encontrado (estatus 404)
