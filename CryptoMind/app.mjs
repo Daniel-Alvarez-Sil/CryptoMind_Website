@@ -262,7 +262,7 @@ app.post('/curso/start', async (req, res) => {
 
     // Find the user ID from the name (assuming `nombre` is unique)
     const [userRows] = await connection.execute(
-      'SELECT id_usuario FROM usuario WHERE nombre = ?',
+      'SELECT id_usuario FROM usuario WHERE username = ?',
       [nombre]
     );
 
@@ -272,11 +272,14 @@ app.post('/curso/start', async (req, res) => {
 
     const id_usuario = userRows[0].id_usuario;
 
-    // Register the course start (assuming there's a table usuario_curso with fields id_usuario, id_curso, inicio_en)
+     // Get current time in UTC-6
     const now = new Date();
+    const utcMinus6 = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    const formattedDate = utcMinus6.toISOString().slice(0, 19).replace('T', ' '); // MySQL format
+    
     await connection.execute(
-      'INSERT INTO usuario_curso (id_usuario, id_curso, inicio_en) VALUES (?, ?, ?)',
-      [id_usuario, id_curso, now]
+      'INSERT INTO usuario_curso (id_usuario, id_curso, fecha_inscripcion) VALUES (?, ?, ?)',
+      [id_usuario, id_curso, formattedDate]
     );
 
     res.status(201).json({ message: 'Course started successfully' });
@@ -290,11 +293,152 @@ app.post('/curso/start', async (req, res) => {
 });
 
 // Servicio para registrar que un jugador finaliza un curso
-app.post('/curso/end', async(req, res) => {
-  
-}); 
+app.post('/curso/end', async (req, res) => {
+  const { id_curso, nombre } = req.body;
 
-// 
+  if (!id_curso || !nombre) {
+    return res.status(400).json({ error: 'Missing credentials' });
+  }
+
+  let connection;
+  try {
+    connection = await dbConnect();
+
+    // Get user ID from name
+    const [userRows] = await connection.execute(
+      'SELECT id_usuario FROM usuario WHERE username = ?',
+      [nombre]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const id_usuario = userRows[0].id_usuario;
+
+    // Get current time in UTC-6
+    const now = new Date();
+    const utcMinus6 = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    const formattedDate = utcMinus6.toISOString().slice(0, 19).replace('T', ' '); // MySQL format
+
+    // Update the end date and optionally set progress to 100%
+    const [result] = await connection.execute(
+      `UPDATE usuario_curso 
+       SET fecha_terminacion = ?, progreso = 100
+       WHERE id_usuario = ? AND id_curso = ?`,
+      [formattedDate, id_usuario, id_curso]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Enrollment not found for this user and course' });
+    }
+
+    res.status(200).json({ message: 'Course marked as completed successfully' });
+
+  } catch (error) {
+    console.error('Error ending course:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    if (connection) connection.end();
+  }
+});
+
+// Servicio para registrar que un jugador empieza un nivel
+app.post('/nivel/start', async (req, res) => {
+  const { id_nivel, username } = req.body;
+
+  if (!id_nivel || !username) {
+    return res.status(400).json({ error: 'Missing credentials' });
+  }
+
+  let connection;
+  try {
+    connection = await dbConnect();
+
+    // Get user ID from username
+    const [userRows] = await connection.execute(
+      'SELECT id_usuario FROM usuario WHERE username = ?',
+      [username]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const id_usuario = userRows[0].id_usuario;
+
+    // Get UTC-6 time
+    const now = new Date();
+    const utcMinus6 = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    const formattedDate = utcMinus6.toISOString().slice(0, 19).replace('T', ' ');
+
+    // Insert level start into usuario_nivel
+    await connection.execute(
+      'INSERT INTO usuario_nivel (id_usuario, id_nivel, fecha_inicio, avance) VALUES (?, ?, ?, 0)',
+      [id_usuario, id_nivel, formattedDate]
+    );
+
+    res.status(201).json({ message: 'Level started successfully' });
+
+  } catch (error) {
+    console.error('Error starting level:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    if (connection) connection.end();
+  }
+});
+
+// Servicio para registrar que un jugador termina un nivel
+app.post('/nivel/end', async (req, res) => {
+  const { id_nivel, username } = req.body;
+
+  if (!id_nivel || !username) {
+    return res.status(400).json({ error: 'Missing credentials' });
+  }
+
+  let connection;
+  try {
+    connection = await dbConnect();
+
+    // Get user ID
+    const [userRows] = await connection.execute(
+      'SELECT id_usuario FROM usuario WHERE username = ?',
+      [username]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const id_usuario = userRows[0].id_usuario;
+
+    // Get UTC-6 time
+    const now = new Date();
+    const utcMinus6 = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    const formattedDate = utcMinus6.toISOString().slice(0, 19).replace('T', ' ');
+
+    // Update level end in usuario_nivel
+    const [result] = await connection.execute(
+      `UPDATE usuario_nivel 
+       SET fecha_fin = ?, avance = 100 
+       WHERE id_usuario = ? AND id_nivel = ?`,
+      [formattedDate, id_usuario, id_nivel]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Level progress not found for this user' });
+    }
+
+    res.status(200).json({ message: 'Level marked as completed successfully' });
+
+  } catch (error) {
+    console.error('Error ending level:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    if (connection) connection.end();
+  }
+});
+
 
 // app.get('/', async (req, res) => {
 
@@ -668,8 +812,8 @@ app.get('/dashboard', ensureAdmin, async (req, res) => {
 
 // Página de respaldo de base de datos
 app.use('/backup', backupRouter);
-app.get('/', (req, res) => {
-  res.redirect('/backup');
+app.get('/download', ensureAdmin, (req, res) => {
+  res.render('backup', { showNavbar: true });
 });
 
 // Página de recurso no encontrado (estatus 404)

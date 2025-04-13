@@ -1,9 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Database Backup</title>
+   <meta charset="UTF-8">
+  <title>Dashboard - Jugadores</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- W3.CSS -->
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+  
+
+  <!-- Custom Styles -->
   <style>
     body {
       font-family: 'Montserrat', sans-serif;
@@ -30,9 +37,15 @@
     }
   </style>
 </head>
-<body>
-  <button class="btn" onclick="download()">Download Backup</button>
 
+<% if (showNavbar) { %>
+  <%- include ('./components/navbar.ejs') %>
+<% } %>
+
+<body>
+  <div class="contain-btn">
+    <button class="btn" onclick="download()">Download Backup</button>
+  </div>
   <script>
     function download() {
       window.location.href = "/backup/download";
