@@ -10,6 +10,28 @@ git clone https://github.com/Daniel-Alvarez-Sil/CryptoMind_Website.git
 cd CryptoMind_Website
 cd CryptoMind
 ```
+
+### Prerequisites.
+> Note:
+> This documentation assumes an Ubuntu OS.
+
+Install Node.js:
+```bash
+# Download and install fnm:
+winget install Schniz.fnm
+# Download and install Node.js:
+fnm install 23
+# Verify the Node.js version:
+node -v # Should print "v23.11.0".
+# Verify npm version:
+npm -v # Should print "10.9.2".
+```
+
+Install nodemon:
+```bash
+npm install -g nodemon
+```
+
 ### Create environment variables to connect to AWS Database (mySQL). 
 ```bash
 sudo nano ~/.bashrc
