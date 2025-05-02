@@ -11,31 +11,8 @@
   
 
   <!-- Custom Styles -->
-  <style>
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(to right, #8f499b, #c7328a, #f01464);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      color: white;
-      margin: 0;
-    }
-    .btn {
-      font-size: 1.5rem;
-      padding: 1rem 2rem;
-      border: none;
-      border-radius: 12px;
-      background-color: #2f4858;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    .btn:hover {
-      background-color: #325179;
-    }
-  </style>
+  <link rel="stylesheet" href="/css/backup.css">
+
 </head>
 
 <% if (showNavbar) { %>
@@ -44,7 +21,7 @@
 
 <body>
   <div class="contain-btn">
-    <button class="btn" onclick="download()">Download Backup</button>
+    <button class="btn" onclick="download()">Descargar Respaldo</button>
   </div>
   <script>
     function download() {

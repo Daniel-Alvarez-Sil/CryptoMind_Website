@@ -30,17 +30,19 @@ app.use(session({
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.json()); 
-app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 
+const dbConfig = {
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: 'CryptoMindDB'
+};
+
 async function dbConnect() {
-  return await mysql.createConnection({
-      host: process.env.MYSQL_HOST,
-      user: process.env.MYSQL_USER,
-      password: process.env.MYSQL_PASSWORD,
-      database: 'CryptoMindDB'
-    });
+  return await mysql.createConnection(dbConfig);
 }
+
 
 // Servicio de conexión a la base de datos
 app.get('/db', async (req, res) => {
@@ -84,8 +86,8 @@ app.post('/unity/register', async (req, res) => {
 
     const query = `
       INSERT INTO usuario 
-      (username, correo, contrasena, nombre, nacimiento, pais, genero, tokens, puntaje, vidas) 
-      VALUES (?, ?, ?, "nombre", ?, ?, ?, 0, 0, 3)
+      (username, correo, contrasena, nombre, nacimiento, pais, genero, tokens, puntaje) 
+      VALUES (?, ?, ?, "nombre", ?, ?, ?, 0, 0)
     `;
 
     await connection.execute(query, [
@@ -125,25 +127,44 @@ app.post('/unity/login', async (req, res) => {
     connection = await dbConnect();
 
     const [rows] = await connection.execute(
-      'SELECT * FROM usuario WHERE correo = ? AND contrasena = ?',
+      `SELECT 
+         id_usuario, 
+         nombre, 
+         tokens, 
+         puntaje, 
+         daño_bala, 
+         costo_mejora 
+       FROM usuario 
+       WHERE correo = ? AND contrasena = ?`,
       [emailDatos, passwordDatos]
     );
 
     if (rows.length > 0) {
+      const user = rows[0];
+
       // Call /sesion/start internally
       await fetch(`http://${ipAddress}:${port}/sesion/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username: emailDatos})
+        body: JSON.stringify({ username: emailDatos })
       });
-      res.status(200).json({ message: 'Login successful' });
-      console.log(`El usuario, ${emailDatos}, inicio sesión. `);
-    } else {
-      console.log(`El usuario, ${emailDatos}, esta intentando ingresar. `);
-      res.status(401).json({ error: 'Invalid emailDatos or passwordDatos' });
 
+      console.log(`El usuario, ${emailDatos}, inició sesión.`);
+
+      // Send the RespuestaLogin object
+      res.status(200).json({
+        id_usuario: user.id_usuario,
+        nombre: user.nombre,
+        tokens: user.tokens,
+        puntaje: user.puntaje,
+        daño_bala: user.daño_bala,
+        costo_mejora: user.costo_mejora
+      });
+    } else {
+      console.log(`El usuario, ${emailDatos}, está intentando ingresar.`);
+      res.status(401).json({ error: 'Invalid emailDatos or passwordDatos' });
     }
 
   } catch (err) {
@@ -153,6 +174,7 @@ app.post('/unity/login', async (req, res) => {
     if (connection) await connection.end();
   }
 });
+
 
 // Servicio para registrar inicio de sesión de juego
 app.post('/sesion/start', async (req, res) => {
@@ -439,6 +461,108 @@ app.post('/nivel/end', async (req, res) => {
   }
 });
 
+// Servicio para obtener todas las preguntas de un nivel
+app.get('/unity/pregunta', async (req, res) => {
+  const id_pregunta = parseInt(req.query.id, 10);
+
+  if (isNaN(id_pregunta)) {
+    return res.status(400).json({ error: 'Parámetro "id" inválido o faltante' });
+  }
+
+  let connection; 
+
+  try {
+    connection = await dbConnect();
+
+    const [preguntaRows] = await connection.execute(
+      'SELECT id_pregunta, id_nivel, texto_pregunta, dificultad FROM pregunta WHERE id_pregunta = ?',
+      [id_pregunta]
+    );
+
+    if (preguntaRows.length === 0) {
+      await connection.end();
+      return res.status(404).json({ error: 'Pregunta no encontrada' });
+    }
+
+    const [opcionesRows] = await connection.execute(
+      'SELECT id_opcion, id_pregunta, texto_opcion, es_correcta FROM opcion WHERE id_pregunta = ?',
+      [id_pregunta]
+    );
+
+    await connection.end();
+
+    res.json({
+      pregunta: preguntaRows[0],
+      opciones: opcionesRows.map(op => ({
+        id_opcion: op.id_opcion, 
+        id_pregunta: op.id_pregunta, 
+        texto_opcion: op.texto_opcion,
+        es_correcta: !!op.es_correcta
+      }))
+    });
+  } catch (error) {
+    console.error('Error en /unity/pregunta:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+  });
+  
+// Servicio para responder la pregunta de un nivel: 
+app.post('/unity/pregunta/contestar', async (req, res) => {
+  const { id_usuario, id_pregunta, id_opcion } = req.body;
+
+  if (!id_usuario || !id_pregunta || !id_opcion) {
+    return res.status(400).json({ error: 'Faltan campos requeridos' });
+  }
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    await connection.beginTransaction();
+
+    // Verificar si la opción es correcta
+    const [opcionRows] = await connection.execute(
+      'SELECT es_correcta FROM opcion WHERE id_opcion = ? AND id_pregunta = ?',
+      [id_opcion, id_pregunta]
+    );
+
+    if (opcionRows.length === 0) {
+      await connection.rollback();
+      await connection.end();
+      return res.status(400).json({ error: 'Opción inválida para la pregunta' });
+    }
+
+    const es_correcta = opcionRows[0].es_correcta === 1;
+
+    // Insertar en usuario_pregunta
+    const [result] = await connection.execute(
+      `INSERT INTO usuario_pregunta (id_usuario, id_pregunta, es_correcta)
+       VALUES (?, ?, ?)`,
+      [id_usuario, id_pregunta, es_correcta]
+    );
+
+    const id_usuario_pregunta = result.insertId;
+
+    // Insertar en usuario_pregunta_opcion
+    await connection.execute(
+      `INSERT INTO usuario_pregunta_opcion (id_usuario_pregunta, id_opcion)
+       VALUES (?, ?)`,
+      [id_usuario_pregunta, id_opcion]
+    );
+
+    await connection.commit();
+    await connection.end();
+    
+    console.log("Pregunta realizada", id_usuario, id_pregunta, id_opcion); 
+
+    return res.status(200).json({
+      message: 'Respuesta guardada correctamente',
+      es_correcta,
+      id_usuario_pregunta
+    });
+  } catch (error) {
+    console.error('Error en /unity/pregunta/contestar:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
 
 // app.get('/', async (req, res) => {
 
@@ -518,7 +642,6 @@ function ensureAuthenticated(req, res, next) {
   }
   res.redirect('/login');
 }
-
 function ensureAdmin(req, res, next) {
   if (req.session.user?.is_Admin) {
     return next();
@@ -758,7 +881,7 @@ app.get('/dashboard', ensureAdmin, async (req, res) => {
     
     const [sesiones] = await connection.execute(`
       SELECT inicio_en FROM sesion WHERE inicio_en IS NOT NULL;
-    `);
+      `);
 
     // Bucketize into day of week (0–6) and hour of day (0–23)
     const heatmapData = Array.from({ length: 7 }, (_, day) =>
