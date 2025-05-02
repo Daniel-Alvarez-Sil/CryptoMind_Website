@@ -14,6 +14,7 @@ import fetch from 'node-fetch';
 import session from 'express-session';
 import bcrypt from 'bcrypt';
 import backupRouter from './routes/backup.mjs';
+import compression from 'compression';
 
 
 const app = express();
@@ -43,6 +44,15 @@ async function dbConnect() {
   return await mysql.createConnection(dbConfig);
 }
 
+
+// GAME
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use('/game', express.static(path.join(__dirname, 'Web')));
+app.use(compression()); 
+app.get('/game', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Web', 'index.html'));
+});
 
 // Servicio de conexión a la base de datos
 app.get('/db', async (req, res) => {
@@ -86,8 +96,8 @@ app.post('/unity/register', async (req, res) => {
 
     const query = `
       INSERT INTO usuario 
-      (username, correo, contrasena, nombre, nacimiento, pais, genero, tokens, puntaje) 
-      VALUES (?, ?, ?, "nombre", ?, ?, ?, 0, 0)
+      (username, correo, contrasena, nombre, nacimiento, pais, genero, tokens, puntaje, daño_bala, costo_mejora) 
+      VALUES (?, ?, ?, "nombre", ?, ?, ?, 0, 0, 20, 25)
     `;
 
     await connection.execute(query, [
@@ -219,8 +229,18 @@ app.post('/sesion/start', async (req, res) => {
 
 // Servicio para registrar fin de sesión de juego
 app.post('/sesion/end', async (req, res) => {
-  const { nombre } = req.body;
-  if (!nombre) return res.status(400).json({ error: 'Missing username' });
+  const { id_usuario, tokens, puntaje, daño_bala, costo_mejora } = req.body;
+  console.log("Se cerro sesion, daño_bala y costo_mejora: ", tokens, puntaje, daño_bala, costo_mejora); 
+
+  if (
+    id_usuario === undefined ||
+    tokens === undefined ||
+    puntaje === undefined ||
+    daño_bala === undefined ||
+    costo_mejora === undefined
+  ) {
+    return res.status(400).json({ error: 'Missing one or more required fields' });
+  }
 
   let connection;
   try {
@@ -228,8 +248,8 @@ app.post('/sesion/end', async (req, res) => {
 
 
     const [users] = await connection.execute(
-      'SELECT id_usuario FROM usuario WHERE username = ?',
-      [nombre]
+      'SELECT id_usuario FROM usuario WHERE id_usuario = ?',
+      [id_usuario]
     );
 
     if (users.length === 0) {
@@ -239,12 +259,23 @@ app.post('/sesion/end', async (req, res) => {
     const userId = users[0].id_usuario;
 
     const [sessions] = await connection.execute(
-      'SELECT id_sesion FROM sesion WHERE id_usuario = ? AND termino_en IS NULL ORDER BY inicio_en ASC LIMIT 1',
+      'SELECT id_sesion FROM sesion WHERE id_usuario = ? AND termino_en IS NULL ORDER BY inicio_en DESC LIMIT 1',
       [userId]
     );
 
     if (sessions.length === 0) {
       return res.status(404).json({ error: 'No open session found' });
+    }
+    
+    const [result] = await connection.execute(
+      `UPDATE usuario 
+       SET tokens = ?, puntaje = ?, daño_bala = ?, costo_mejora = ?
+       WHERE id_usuario = ?`,
+      [tokens, puntaje, daño_bala, costo_mejora, id_usuario]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found' });
     }
 
     const sessionId = sessions[0].id_sesion;
@@ -258,9 +289,9 @@ app.post('/sesion/end', async (req, res) => {
       'UPDATE sesion SET termino_en = ? WHERE id_sesion = ?',
       [formattedDate, sessionId]
     );
-
+    
+    console.log(`El usuario, ${id_usuario}, finalizó sesión a las ${formattedDate} (UTC-6).`);
     res.status(200).json({ message: 'Session ended successfully' });
-    console.log(`El usuario, ${nombre}, finalizó sesión a las ${formattedDate} (UTC-6).`);
 
   } catch (err) {
     console.error(err);
@@ -462,14 +493,38 @@ app.post('/nivel/end', async (req, res) => {
 });
 
 // Servicio para obtener todas las preguntas de un nivel
-app.get('/unity/pregunta', async (req, res) => {
+import axios from 'axios';
+
+const GOOGLE_TRANSLATE_API_KEY = 'AIzaSyBkVYhAhv2fsKkmbc1XujG3e7oBytOr6Jo'; // 🔐 Replace with your real key
+
+async function traducirGoogle(texto, targetLang = 'es') {
+  const url = `https://translation.googleapis.com/language/translate/v2`;
+  try {
+    const response = await axios.post(url, null, {
+      params: {
+        key: GOOGLE_TRANSLATE_API_KEY,
+        q: texto,
+        target: targetLang,
+        format: 'text'
+      }
+    });
+
+    return response.data.data.translations[0].translatedText;
+  } catch (err) {
+    console.error('Translation API error:', err.message);
+    return texto; // fallback to original text
+  }
+}
+
+app.get('/unity/pregunta/:language', async (req, res) => {
   const id_pregunta = parseInt(req.query.id, 10);
+  const language = req.params.language || 'en';
 
   if (isNaN(id_pregunta)) {
     return res.status(400).json({ error: 'Parámetro "id" inválido o faltante' });
   }
 
-  let connection; 
+  let connection;
 
   try {
     connection = await dbConnect();
@@ -491,27 +546,38 @@ app.get('/unity/pregunta', async (req, res) => {
 
     await connection.end();
 
-    res.json({
-      pregunta: preguntaRows[0],
-      opciones: opcionesRows.map(op => ({
-        id_opcion: op.id_opcion, 
-        id_pregunta: op.id_pregunta, 
-        texto_opcion: op.texto_opcion,
-        es_correcta: !!op.es_correcta
-      }))
-    });
+    let pregunta = preguntaRows[0];
+    let opciones = opcionesRows.map(op => ({
+      id_opcion: op.id_opcion,
+      id_pregunta: op.id_pregunta,
+      texto_opcion: op.texto_opcion,
+      es_correcta: !!op.es_correcta
+    }));
+
+    // Translate if language is 'es'
+    if (language === 'es') {
+      console.log("Traduciendo...")
+      pregunta.texto_pregunta = await traducirGoogle(pregunta.texto_pregunta, 'es');
+      for (let i = 0; i < opciones.length; i++) {
+        opciones[i].texto_opcion = await traducirGoogle(opciones[i].texto_opcion, 'es');
+      }
+    }
+
+    res.json({ pregunta, opciones });
+
   } catch (error) {
     console.error('Error en /unity/pregunta:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
-  });
+});
+
   
 // Servicio para responder la pregunta de un nivel: 
 app.post('/unity/pregunta/contestar', async (req, res) => {
-  const { id_usuario, id_pregunta, id_opcion } = req.body;
+  const { id_usuario, id_pregunta, id_opcion, es_correcta, id_nivel } = req.body;
 
   if (!id_usuario || !id_pregunta || !id_opcion) {
-    return res.status(400).json({ error: 'Faltan campos requeridos' });
+    return res.status(402).json({ error: 'Faltan campos requeridos' });
   }
 
   try {
@@ -527,10 +593,27 @@ app.post('/unity/pregunta/contestar', async (req, res) => {
     if (opcionRows.length === 0) {
       await connection.rollback();
       await connection.end();
-      return res.status(400).json({ error: 'Opción inválida para la pregunta' });
+      return res.status(403).json({ error: 'Opción inválida para la pregunta' });
     }
 
     const es_correcta = opcionRows[0].es_correcta === 1;
+
+    // Verificar si ya existe la misma combinación
+    const [existingRows] = await connection.execute(
+      `SELECT id_usuario_pregunta FROM usuario_pregunta
+       WHERE id_usuario = ? AND id_pregunta = ? AND es_correcta = ?`,
+      [id_usuario, id_pregunta, es_correcta]
+    );
+
+    if (existingRows.length > 0) {
+      await connection.rollback();
+      await connection.end();
+      return res.status(200).json({
+        message: 'La respuesta ya fue registrada anteriormente',
+        es_correcta,
+        id_usuario_pregunta: existingRows[0].id_usuario_pregunta
+      });
+    }
 
     // Insertar en usuario_pregunta
     const [result] = await connection.execute(
@@ -548,10 +631,48 @@ app.post('/unity/pregunta/contestar', async (req, res) => {
       [id_usuario_pregunta, id_opcion]
     );
 
+    // Verificar si es la primera pregunta respondida para el nivel
+    const [preguntasNivel] = await connection.execute(
+      `SELECT COUNT(*) AS total FROM usuario_pregunta up
+       JOIN pregunta p ON up.id_pregunta = p.id_pregunta
+       WHERE up.id_usuario = ? AND p.id_nivel = ?`,
+      [id_usuario, id_nivel]
+    );
+
+    if (preguntasNivel[0].total === 1) {
+      await connection.execute(
+        `INSERT INTO usuario_nivel (id_usuario, id_nivel, fecha_inicio, avance)
+         VALUES (?, ?, CONVERT_TZ(NOW(), '+00:00', '-06:00'), 0)`,
+        [id_usuario, id_nivel]
+      );
+    }
+
+    // Verificar si todas las preguntas del nivel han sido respondidas correctamente
+    const [totalPreguntas] = await connection.execute(
+      `SELECT COUNT(*) AS total FROM pregunta WHERE id_nivel = ?`,
+      [id_nivel]
+    );
+
+    const [correctasUsuario] = await connection.execute(
+      `SELECT COUNT(DISTINCT up.id_pregunta) AS correctas FROM usuario_pregunta up
+       JOIN pregunta p ON up.id_pregunta = p.id_pregunta
+       WHERE up.id_usuario = ? AND p.id_nivel = ? AND up.es_correcta = 1`,
+      [id_usuario, id_nivel]
+    );
+
+    if (correctasUsuario[0].correctas === totalPreguntas[0].total) {
+      await connection.execute(
+        `UPDATE usuario_nivel
+         SET fecha_fin = CONVERT_TZ(NOW(), '+00:00', '-06:00'), avance = 100
+         WHERE id_usuario = ? AND id_nivel = ?`,
+        [id_usuario, id_nivel]
+      );
+    }
+
     await connection.commit();
     await connection.end();
-    
-    console.log("Pregunta realizada", id_usuario, id_pregunta, id_opcion); 
+
+    console.log("Pregunta realizada", id_usuario, id_pregunta, id_opcion);
 
     return res.status(200).json({
       message: 'Respuesta guardada correctamente',
@@ -563,6 +684,49 @@ app.post('/unity/pregunta/contestar', async (req, res) => {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+
+
+// Servicio para guardar progreso
+// Servicio para actualizar campos del usuario
+app.post('/unity/guardar-progreso', async (req, res) => {
+  const { id_usuario, tokens, puntaje, daño_bala, costo_mejora } = req.body;
+  
+  console.log("Se cambio el progreso, daño_bala y costo_mejora: ", daño_bala, costo_mejora); 
+
+  if (
+    id_usuario === undefined ||
+    tokens === undefined ||
+    puntaje === undefined ||
+    daño_bala === undefined ||
+    costo_mejora === undefined
+  ) {
+    return res.status(400).json({ error: 'Missing one or more required fields' });
+  }
+
+  let connection;
+  try {
+    connection = await dbConnect();
+
+    const [result] = await connection.execute(
+      `UPDATE usuario 
+       SET tokens = ?, puntaje = ?, daño_bala = ?, costo_mejora = ?
+       WHERE id_usuario = ?`,
+      [tokens, puntaje, daño_bala, costo_mejora, id_usuario]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'User data updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  } finally {
+    if (connection) await connection.end();
+  }
+});
+
 
 // app.get('/', async (req, res) => {
 
@@ -597,7 +761,7 @@ app.post('/login', async (req, res) => {
     const user = rows[0];
     if (!user) {
       console.log("No hay usuarios. "); 
-      res.redirect('/login');
+      res.redirect('/admin');
       return; 
     }
     
@@ -611,7 +775,7 @@ app.post('/login', async (req, res) => {
     // if (!passwordMatch) {
     if (contrasena.trim() != user.contrasena.trim()) {
       console.log(contrasena, user.contrasena); 
-      res.redirect('/login');
+      res.redirect('/admin');
       return; 
     }
 
@@ -631,7 +795,7 @@ app.post('/login', async (req, res) => {
 // Servicio de logout para página web
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
-    res.redirect('/login');
+    res.redirect('/admin');
   });
 });
 
@@ -640,19 +804,19 @@ function ensureAuthenticated(req, res, next) {
   if (req.session.user) {
     return next();
   }
-  res.redirect('/login');
+  res.redirect('/admin');
 }
 function ensureAdmin(req, res, next) {
   if (req.session.user?.is_Admin) {
     return next();
   }
-  res.redirect('/login');
+  res.redirect('/admin');
   // res.status(403).send('Access denied');
 }
 
 // Página de login
-app.get('/login', (req, res) => {
-  res.render('login'); 
+app.get('/admin', (req, res) => {
+  res.render('admin'); 
 }); 
 
 // Página de inicio
