@@ -31,15 +31,15 @@
                   <th>ID</th>
                   <th>Username</th>
                   <th>Email</th>
-                  <th>Nombre</th>
+                  <!--<th>Nombre</th>-->
                   <th>Nacimiento</th>
                   <th>País</th>
                   <th>Género</th>
                   <th>Tokens</th>
                   <th>Puntaje</th>
-                  <th>Vidas</th>
+                  <!--<th>Vidas</th>-->
                   <th>Creado en</th>
-                  <th>Última conexión</th>
+                  <!--<th>Última conexión</th>-->
                 </tr>
               </thead>
               <tbody>
@@ -48,15 +48,15 @@
                     <td><%= usuario.id_usuario %></td>
                     <td><%= usuario.username %></td>
                     <td><%= usuario.correo %></td>
-                    <td><%= usuario.nombre %></td>
+                    <!--<td><%= usuario.nombre %></td>-->
                     <td><%= usuario.nacimiento ? new Date(usuario.nacimiento).toISOString().split('T')[0] : 'N/A' %></td>
                     <td><%= usuario.pais %></td>
                     <td><%= usuario.genero || 'N/A' %></td>
                     <td><%= usuario.tokens %></td>
                     <td><%= usuario.puntaje %></td>
-                    <td><%= usuario.vidas %></td>
+                    <!--<td><%= usuario.vidas %></td>-->
                     <td><%= usuario.creado_en ? new Date(usuario.creado_en).toISOString().split('T')[0] : 'N/A' %></td>
-                    <td><%= usuario.ultima_conexion ? new Date(usuario.ultima_conexion).toISOString().split('T')[0] : 'Nunca' %></td>
+                    <!--<td><%= usuario.ultima_conexion ? new Date(usuario.ultima_conexion).toISOString().split('T')[0] : 'Nunca' %></td>-->
                   </tr>
                 <% }) %>
               </tbody>

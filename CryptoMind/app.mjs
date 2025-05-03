@@ -81,6 +81,12 @@ app.post('/unity/register', async (req, res) => {
     gender
   } = req.body;
   console.log(birthday); 
+  
+  let gender2 = gender; 
+    
+    if (gender === 'Femenino') gender2 = 'Female'; 
+    if (gender === 'Masculino') gender2 = 'Male'; 
+    if (gender === 'No binario') gender2 = 'Non-binary'; 
 
   // Validate required fields
   if (
@@ -106,11 +112,13 @@ app.post('/unity/register', async (req, res) => {
       password,
       birthday,
       country,
-      gender || null,
+      gender2 || null,
     ]);
+    
+    
 
     res.status(201).json({ message: 'User created successfully' });
-    console.log(`Usuario creado: ${nombre}`);
+    console.log(`Usuario creado: ${nombre}, ${gender2}`);
 
   } catch (err) {
     console.log(`Intento de creación de usuario: ${nombre}`);
@@ -161,7 +169,7 @@ app.post('/unity/login', async (req, res) => {
         body: JSON.stringify({ username: emailDatos })
       });
 
-      console.log(`El usuario, ${emailDatos}, inició sesión.`);
+      console.log(`El usuario, ${emailDatos}, inició sesión. `);
 
       // Send the RespuestaLogin object
       res.status(200).json({
