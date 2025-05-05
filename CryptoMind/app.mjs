@@ -503,7 +503,7 @@ app.post('/nivel/end', async (req, res) => {
 // Servicio para obtener todas las preguntas de un nivel
 import axios from 'axios';
 
-const GOOGLE_TRANSLATE_API_KEY = 'AIzaSyBkVYhAhv2fsKkmbc1XujG3e7oBytOr6Jo'; // 🔐 Replace with your real key
+const GOOGLE_TRANSLATE_API_KEY = 'PASSWORD'; // Replace with your real key
 
 async function traducirGoogle(texto, targetLang = 'es') {
   const url = `https://translation.googleapis.com/language/translate/v2`;
@@ -1046,6 +1046,7 @@ app.get('/dashboard', ensureAdmin, async (req, res) => {
       GROUP BY u.pais
       ORDER BY minutos_jugados DESC
       LIMIT 10;
+      
     `);
     
     const paises = engagement.map(row => row.pais);
