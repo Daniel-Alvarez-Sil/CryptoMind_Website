@@ -38,9 +38,9 @@ sudo nano ~/.bashrc
 ```
 Add the following lines at the end of the open file. 
 ```bash
-export MYSQL_HOST="db-cryptomind.cmkp6fsa6pac.us-east-1.rds.amazonaws.com"
-export MYSQL_USER="admin"
-export MYSQL_PASSWORD="P0K3M0NJ4P4N26_m"
+export MYSQL_HOST="db..." // Name of your db host
+export MYSQL_USER="admin" // Name of your user
+export MYSQL_PASSWORD="password" // Your db password
 ```
 ---
 Install dependencies. 
